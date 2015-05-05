@@ -14,8 +14,9 @@ ICON_DEFAULT = 'icon.png'
 ICON_BASIC = 'icon_basic.png'
 ICON_WEB = 'icon_web.png'
 
+
 def get_web_data(query):
-    query = urllib.quote(query)
+    query = urllib.quote(str(query))
     url = 'http://fanyi.youdao.com/openapi.do?keyfrom=' + keyfrom + \
         '&key=' + str(apikey) + \
         '&type=data&doctype=json&version=1.1&q=' + query
@@ -32,6 +33,7 @@ def main(wf):
         return 0
 
     s = get_web_data(query)
+
     # '翻译结果'
     title = s["translation"]
     title = ''.join(title).encode("UTF-8")
@@ -40,7 +42,7 @@ def main(wf):
     if title != query:
         subtitle = '翻译结果'
         wf.add_item(
-                    title=title, subtitle=subtitle, arg=url, valid=True, icon=ICON_DEFAULT)
+            title=title, subtitle=subtitle, arg=url, valid=True, icon=ICON_DEFAULT)
 
         # '简明释意'
         if u'basic' in s.keys():
@@ -68,5 +70,11 @@ def main(wf):
     wf.send_feedback()
 
 if __name__ == '__main__':
-    wf = Workflow()
+    wf = Workflow(update_settings={
+        'github_slug': 'liszd/whyliam.workflows.youdao',
+        'frequency': 7
+    })
+
     sys.exit(wf.run(main))
+    if wf.update_available:
+        wf.start_update()
