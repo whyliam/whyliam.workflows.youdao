@@ -1,16 +1,38 @@
 # whyliam.workflows.youdao
----
 
-有道翻译 workflow v1.0.0
+有道翻译 workflow v1.1.0
 
-默认快捷键 "cd"，多个翻译结果，回车 即可以在有道词典的页面中查询输入的单词。
+默认快捷键 "cd"，查看翻译结果。
 
+1. 英译中
+2. 英译中
+3. 翻译短语句子
+4. 打开有道翻译页面，查看详细内容
+5. 直接在打出翻译结果
 
-### [下载](https://github.com/samqiu/Youdao.alfredworkflow/blob/master/Youdao.alfredworkflow)
+[下载](https://github.com/liszd/whyliam.workflows.youdao/blob/master/whyliam.workflows.youdao.alfredworkflow?raw=true)
 
 ## Demo
 
-![](http://ww1.sinaimg.cn/large/48910e01gw1ertn14ua8bg213m0khx5t.gif)
+#### 英译中
+
+![](http://ww2.sinaimg.cn/large/48910e01gw1erucr05z85g213p0kbqhn.gif)
+
+#### 英译中
+
+![](http://ww2.sinaimg.cn/large/48910e01gw1erucrd5tnmg213p0kbk6q.gif)
+
+#### 翻译短语
+
+![](http://ww2.sinaimg.cn/large/48910e01gw1erucrvb9a8g213p0kbqhn.gif)
+
+#### 打开有道翻译页面
+
+![](http://ww4.sinaimg.cn/large/48910e01gw1erucsmvtkgg213l0kaqq2.gif)
+
+#### 直接打印结果
+
+![](http://ww3.sinaimg.cn/large/48910e01gw1eructbvt9rg213p0jh0wi.gif)
 
 ---
 

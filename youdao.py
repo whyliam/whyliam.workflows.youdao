@@ -25,7 +25,7 @@ def get_web_data(query):
 
 def main(wf):
 
-    query = wf.args[0].strip()
+    query = wf.args[0].strip().replace("\\", "")
 
     if not query:
         wf.add_item('有道翻译')
@@ -41,16 +41,18 @@ def main(wf):
 
     if title != query:
         subtitle = '翻译结果'
+        arg = url + "," + title
         wf.add_item(
-            title=title, subtitle=subtitle, arg=url, valid=True, icon=ICON_DEFAULT)
+            title=title, subtitle=subtitle, arg=arg, valid=True, icon=ICON_DEFAULT)
 
         # '简明释意'
         if u'basic' in s.keys():
             for be in range(len(s["basic"]["explains"])):
                 title = s["basic"]["explains"][be]
                 subtitle = '简明释意'
+                arg = url + "," + title
                 wf.add_item(
-                    title=title, subtitle=subtitle, arg=url, valid=True, icon=ICON_BASIC)
+                    title=title, subtitle=subtitle, arg=arg, valid=True, icon=ICON_BASIC)
 
         # '网络翻译'
         if u'web' in s.keys():
@@ -58,14 +60,16 @@ def main(wf):
                 title = s["web"][w]["key"]
                 title = ''.join(title).encode("UTF-8")
                 subtitle = '网络翻译: ' + s["web"][w]["key"]
+                arg = url + "," + title
                 wf.add_item(
-                    title=title, subtitle=subtitle, arg=url, valid=True, icon=ICON_WEB)
+                    title=title, subtitle=subtitle, arg=arg, valid=True, icon=ICON_WEB)
 
     else:
         title = '有道也翻译不出来了'
         subtitle = '尝试一下去网站搜索'
+        arg = url + "," + title
         wf.add_item(
-            title=title, subtitle=subtitle, arg=url, valid=True, icon=ICON_DEFAULT)
+            title=title, subtitle=subtitle, arg=arg, valid=True, icon=ICON_DEFAULT)
 
     wf.send_feedback()
 

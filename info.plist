@@ -8,15 +8,53 @@
 	<string>Tools</string>
 	<key>connections</key>
 	<dict>
-		<key>91C343E7-50D8-4B0D-9034-1C16C20DA8D4</key>
+		<key>27E60581-8105-41DD-8E29-4FE811179098</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>E5E934DB-DBAC-4D0C-9AB0-ADAF62C5640B</string>
+				<string>DBA62127-3B78-4B80-B82B-1C6AEC393003</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
 				<string></string>
+			</dict>
+		</array>
+		<key>7C1ABC41-3B36-401F-96C7-30BCB39181FF</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>0907BEF4-816F-48FF-B157-03F5C2AACEAB</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
+		</array>
+		<key>91C343E7-50D8-4B0D-9034-1C16C20DA8D4</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>9D65478B-1DB1-4198-B977-D538BCA74A4A</string>
+				<key>modifiers</key>
+				<integer>262144</integer>
+				<key>modifiersubtext</key>
+				<string>从有道网页打开</string>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>27E60581-8105-41DD-8E29-4FE811179098</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>7C1ABC41-3B36-401F-96C7-30BCB39181FF</string>
+				<key>modifiers</key>
+				<integer>1048576</integer>
+				<key>modifiersubtext</key>
+				<string>直接打印</string>
 			</dict>
 		</array>
 	</dict>
@@ -33,10 +71,56 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>applescript</key>
+				<string>on alfred_script(q)
+# get default browser name see: https://discussions.apple.com/thread/4570295?start=0&amp;tstart=0
+set browserName to do shell script "export VERSIONER_PERL_PREFER_32_BIT=yes; perl -MMac::InternetConfig -le 'print +(GetICHelper \"http\")[1]'"
+
+set AppleScript's text item delimiters to {","}
+set urlD to text item 1 of q
+
+if ((contents of browserName) is equal to "Google Chrome") then
+tell application browserName
+    tell (make new window )
+        activate
+    end tell
+end tell
+tell application "Google Chrome" to set URL of active tab of front window to urlD
+
+else if ((contents of browserName) is equal to "Safari") then
+# 新建窗口
+    tell application browserName
+        make new document at end of documents
+    end tell
+    
+    # 设置窗口位置
+    tell application "Safari"
+        activate
+    end tell
+    
+    # 打开 URL
+    tell application "Safari" to set URL of front document to urlD
+
+end if
+
+end alfred_script</string>
+				<key>cachescript</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.applescript</string>
+			<key>uid</key>
+			<string>9D65478B-1DB1-4198-B977-D538BCA74A4A</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>argumenttype</key>
 				<integer>0</integer>
 				<key>escaping</key>
-				<integer>127</integer>
+				<integer>7</integer>
 				<key>keyword</key>
 				<string>yd</string>
 				<key>queuedelaycustom</key>
@@ -70,37 +154,110 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>plusspaces</key>
+				<key>autopaste</key>
 				<false/>
-				<key>url</key>
+				<key>clipboardtext</key>
 				<string>{query}</string>
-				<key>utf8</key>
-				<true/>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.action.openurl</string>
+			<string>alfred.workflow.output.clipboard</string>
 			<key>uid</key>
-			<string>E5E934DB-DBAC-4D0C-9AB0-ADAF62C5640B</string>
+			<string>DBA62127-3B78-4B80-B82B-1C6AEC393003</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>68</integer>
+				<key>script</key>
+				<string>/usr/bin/python splitargs.py "{query}" 1</string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>27E60581-8105-41DD-8E29-4FE811179098</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>autopaste</key>
+				<true/>
+				<key>clipboardtext</key>
+				<string>{query}</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.clipboard</string>
+			<key>uid</key>
+			<string>0907BEF4-816F-48FF-B157-03F5C2AACEAB</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>68</integer>
+				<key>script</key>
+				<string>/usr/bin/python splitargs.py "{query}" 1</string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>7C1ABC41-3B36-401F-96C7-30BCB39181FF</string>
 			<key>version</key>
 			<integer>0</integer>
 		</dict>
 	</array>
 	<key>readme</key>
-	<string></string>
+	<string>有道翻译 workflow v1.0.0
+
+默认快捷键 "cd"，多个翻译结果，回车 即可以在有道词典的页面中查询输入的单词。</string>
 	<key>uidata</key>
 	<dict>
+		<key>0907BEF4-816F-48FF-B157-03F5C2AACEAB</key>
+		<dict>
+			<key>ypos</key>
+			<real>370</real>
+		</dict>
+		<key>27E60581-8105-41DD-8E29-4FE811179098</key>
+		<dict>
+			<key>ypos</key>
+			<real>250</real>
+		</dict>
+		<key>7C1ABC41-3B36-401F-96C7-30BCB39181FF</key>
+		<dict>
+			<key>ypos</key>
+			<real>370</real>
+		</dict>
 		<key>91C343E7-50D8-4B0D-9034-1C16C20DA8D4</key>
 		<dict>
 			<key>ypos</key>
-			<real>10</real>
+			<real>120</real>
 		</dict>
-		<key>E5E934DB-DBAC-4D0C-9AB0-ADAF62C5640B</key>
+		<key>9D65478B-1DB1-4198-B977-D538BCA74A4A</key>
 		<dict>
 			<key>ypos</key>
-			<real>10</real>
+			<real>30</real>
+		</dict>
+		<key>DBA62127-3B78-4B80-B82B-1C6AEC393003</key>
+		<dict>
+			<key>ypos</key>
+			<real>250</real>
 		</dict>
 	</dict>
 	<key>webaddress</key>
-	<string>youdao.com</string>
+	<string>https://github.com/liszd/whyliam.workflows.youdao</string>
 </dict>
 </plist>
