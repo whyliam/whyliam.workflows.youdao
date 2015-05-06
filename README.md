@@ -5,7 +5,7 @@
 默认快捷键 "cd"，查看翻译结果。
 
 1. 英译中
-2. 英译中
+2. 中译英
 3. 翻译短语句子
 4. 打开有道翻译页面，查看详细内容
 5. 直接在打出翻译结果
@@ -25,7 +25,7 @@
 
 ![](http://ww2.sinaimg.cn/large/48910e01gw1erucr05z85g213p0kbqhn.gif)
 
-#### 英译中
+#### 中译英
 
 ![](http://ww2.sinaimg.cn/large/48910e01gw1erucrd5tnmg213p0kbk6q.gif)
 

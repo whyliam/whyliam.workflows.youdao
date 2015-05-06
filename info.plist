@@ -221,9 +221,21 @@ end alfred_script</string>
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>有道翻译 workflow v1.0.0
+	<string>有道翻译 workflow v1.1.0
 
-默认快捷键 "cd"，多个翻译结果，回车 即可以在有道词典的页面中查询输入的单词。</string>
+默认快捷键 "cd"，查看翻译结果。
+
+1. 英译中
+2. 中译英
+3. 翻译短语句子
+4. 打开有道翻译页面，查看详细内容
+5. 直接在打出翻译结果
+
+*功能*
+
+1. 按`回车` 复制
+2. 按`Ctrl+回车` 打开有道翻译页面
+3. 按`Command+回车` 直接在打出翻译结果</string>
 	<key>uidata</key>
 	<dict>
 		<key>0907BEF4-816F-48FF-B157-03F5C2AACEAB</key>
