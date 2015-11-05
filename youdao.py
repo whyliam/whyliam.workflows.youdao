@@ -47,15 +47,16 @@ def main(wf):
 
         if u'basic' in s.keys():
             # '发音'
-            title = "[" + s["basic"]["phonetic"] + "]"
-            if s["basic"]["us-phonetic"]:
-                title += (" [美: " + s["basic"]["us-phonetic"] + "]")
-            if s["basic"]["uk-phonetic"]:
-                title += (" [英: " + s["basic"]["uk-phonetic"] + "]")
-            subtitle = '发音'
-            arg = url + "," + title
-            wf.add_item(
-                title=title, subtitle=subtitle, arg=arg, valid=True, icon=ICON_DEFAULT)
+            if s["basic"].get("phonetic"):
+                title = "[" + s["basic"]["phonetic"] + "]"
+                if s["basic"].get("us-phonetic"):
+                    title += (" [美: " + s["basic"]["us-phonetic"] + "]")
+                if s["basic"].get("uk-phonetic"):
+                    title += (" [英: " + s["basic"]["uk-phonetic"] + "]")
+                subtitle = '发音'
+                arg = url + "," + title
+                wf.add_item(
+                    title=title, subtitle=subtitle, arg=arg, valid=True, icon=ICON_DEFAULT)
 
             # '简明释意'
             for be in range(len(s["basic"]["explains"])):
