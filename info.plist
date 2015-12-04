@@ -42,6 +42,14 @@
 			</dict>
 			<dict>
 				<key>destinationuid</key>
+				<string>4473C9D3-7A15-4D31-84F6-A096A7CFF46C</string>
+				<key>modifiers</key>
+				<integer>131072</integer>
+				<key>modifiersubtext</key>
+				<string>有道发音</string>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
 				<string>27E60581-8105-41DD-8E29-4FE811179098</string>
 				<key>modifiers</key>
 				<integer>0</integer>
@@ -117,6 +125,32 @@ end alfred_script</string>
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>103</integer>
+				<key>script</key>
+				<string>string="{query}"
+array=(${string//,/ })
+if ([[ ${array[1]} =~ ^[[:alnum:]]*$ ]])
+then
+	say ${array[1]}
+else
+	say --voice="Ting-Ting"  ${array[1]}
+fi</string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.script</string>
+			<key>uid</key>
+			<string>4473C9D3-7A15-4D31-84F6-A096A7CFF46C</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>argumenttype</key>
 				<integer>0</integer>
 				<key>escaping</key>
@@ -154,6 +188,25 @@ end alfred_script</string>
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>68</integer>
+				<key>script</key>
+				<string>/usr/bin/python splitargs.py "{query}" 1</string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>27E60581-8105-41DD-8E29-4FE811179098</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>autopaste</key>
 				<false/>
 				<key>clipboardtext</key>
@@ -181,7 +234,7 @@ end alfred_script</string>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
 			<key>uid</key>
-			<string>27E60581-8105-41DD-8E29-4FE811179098</string>
+			<string>7C1ABC41-3B36-401F-96C7-30BCB39181FF</string>
 			<key>version</key>
 			<integer>0</integer>
 		</dict>
@@ -197,25 +250,6 @@ end alfred_script</string>
 			<string>alfred.workflow.output.clipboard</string>
 			<key>uid</key>
 			<string>0907BEF4-816F-48FF-B157-03F5C2AACEAB</string>
-			<key>version</key>
-			<integer>0</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>concurrently</key>
-				<false/>
-				<key>escaping</key>
-				<integer>68</integer>
-				<key>script</key>
-				<string>/usr/bin/python splitargs.py "{query}" 1</string>
-				<key>type</key>
-				<integer>0</integer>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.script</string>
-			<key>uid</key>
-			<string>7C1ABC41-3B36-401F-96C7-30BCB39181FF</string>
 			<key>version</key>
 			<integer>0</integer>
 		</dict>
@@ -246,12 +280,17 @@ end alfred_script</string>
 		<key>27E60581-8105-41DD-8E29-4FE811179098</key>
 		<dict>
 			<key>ypos</key>
-			<real>250</real>
+			<real>190</real>
+		</dict>
+		<key>4473C9D3-7A15-4D31-84F6-A096A7CFF46C</key>
+		<dict>
+			<key>ypos</key>
+			<real>120</real>
 		</dict>
 		<key>7C1ABC41-3B36-401F-96C7-30BCB39181FF</key>
 		<dict>
 			<key>ypos</key>
-			<real>370</real>
+			<real>340</real>
 		</dict>
 		<key>91C343E7-50D8-4B0D-9034-1C16C20DA8D4</key>
 		<dict>

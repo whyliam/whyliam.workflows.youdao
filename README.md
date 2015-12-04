@@ -1,8 +1,8 @@
 # whyliam.workflows.youdao
 
-有道翻译 workflow v1.1.0
+有道翻译 workflow v1.2.0
 
-默认快捷键 "cd"，查看翻译结果。
+默认快捷键 "yd"，查看翻译结果。
 
 1. 英译中
 2. 中译英
@@ -15,6 +15,7 @@
 1. 按`回车` 复制
 2. 按`Ctrl+回车` 打开有道翻译页面
 3. 按`Command+回车` 直接在打出翻译结果
+4. 按`Shift+回车` 直接发音
 
 
 [下载](https://github.com/liszd/whyliam.workflows.youdao/blob/master/whyliam.workflows.youdao.alfredworkflow?raw=true)

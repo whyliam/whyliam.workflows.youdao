@@ -11,6 +11,7 @@ sys.setdefaultencoding('utf8')
 apikey = 1331254833
 keyfrom = 'whyliam'
 ICON_DEFAULT = 'icon.png'
+ICON_PHONETIC = 'icon_phonetic.png'
 ICON_BASIC = 'icon_basic.png'
 ICON_WEB = 'icon_web.png'
 
@@ -48,15 +49,16 @@ def main(wf):
         if u'basic' in s.keys():
             # '发音'
             if s["basic"].get("phonetic"):
-                title = "[" + s["basic"]["phonetic"] + "]"
+                title = ""
                 if s["basic"].get("us-phonetic"):
                     title += (" [美: " + s["basic"]["us-phonetic"] + "]")
                 if s["basic"].get("uk-phonetic"):
                     title += (" [英: " + s["basic"]["uk-phonetic"] + "]")
-                subtitle = '发音'
-                arg = url + "," + title
+                title = title if title else "[" + s["basic"]["phonetic"] + "]"
+                subtitle = '有道发音'
+                arg = url + "," + query
                 wf.add_item(
-                    title=title, subtitle=subtitle, arg=arg, valid=True, icon=ICON_DEFAULT)
+                    title=title, subtitle=subtitle, arg=arg, valid=True, icon=ICON_PHONETIC)
 
             # '简明释意'
             for be in range(len(s["basic"]["explains"])):
