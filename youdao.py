@@ -39,7 +39,7 @@ def main(wf):
     title = ''.join(title).encode("UTF-8")
     url = u'http://dict.youdao.com/search?q=' + query
 
-    if title != query:
+    if query:
         subtitle = '翻译结果'
         arg = url + "," + title
         wf.add_item(
@@ -69,8 +69,8 @@ def main(wf):
         # '网络翻译'
         if u'web' in s.keys():
             for w in range(len(s["web"])):
-                title = s["web"][w]["key"]
-                title = ''.join(title).encode("UTF-8")
+                title = s["web"][w]["value"]
+                title = ','.join(title).encode("UTF-8")
                 subtitle = '网络翻译: ' + s["web"][w]["key"]
                 arg = url + "," + title
                 wf.add_item(
