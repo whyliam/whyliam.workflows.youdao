@@ -25,7 +25,6 @@ def get_web_data(query):
 
 
 def main(wf):
-
     query = wf.args[0].strip().replace("\\", "")
 
     if not query:
@@ -35,14 +34,21 @@ def main(wf):
 
     s = get_web_data(query)
 
-    # '翻译结果'
-    title = s["translation"]
-    title = ''.join(title).encode("UTF-8")
-    url = u'http://dict.youdao.com/search?q=' + query
-
-    if query:
+    if s.get("errorCode") == 0:
+        # '翻译结果'
+        title = s["translation"]
+        title = ''.join(title)
+        # url = u'http://dict.youdao.com/search?q=' + query
+        tran = 'EtC'
+        if not isinstance(query, unicode):
+            query = query.decode('utf8')
+        if re.search(ur"[\u4e00-\u9fa5]+", query):
+            tran = 'CtE'
         subtitle = '翻译结果'
-        arg = url + "," + title
+
+        arg = [query, title, query, ' '] if tran == 'EtC' else [
+            query, title, title, ' ']
+        arg = '$'.join(arg)
         wf.add_item(
             title=title, subtitle=subtitle, arg=arg, valid=True, icon=ICON_DEFAULT)
 
@@ -56,7 +62,9 @@ def main(wf):
                     title += (" [英: " + s["basic"]["uk-phonetic"] + "]")
                 title = title if title else "[" + s["basic"]["phonetic"] + "]"
                 subtitle = '有道发音'
-                arg = url + "," + query
+                arg = [query, title, query, ' '] if tran == 'EtC' else [
+                    query, title, ' ', query]
+                arg = '$'.join(arg)
                 wf.add_item(
                     title=title, subtitle=subtitle, arg=arg, valid=True, icon=ICON_PHONETIC)
 
@@ -64,7 +72,9 @@ def main(wf):
             for be in range(len(s["basic"]["explains"])):
                 title = s["basic"]["explains"][be]
                 subtitle = '简明释意'
-                arg = url + "," + title
+                arg = [query, title, query, ' '] if tran == 'EtC' else [
+                    query, title, title, ' ']
+                arg = '$'.join(arg)
                 wf.add_item(
                     title=title, subtitle=subtitle, arg=arg, valid=True, icon=ICON_BASIC)
 
@@ -72,16 +82,25 @@ def main(wf):
         if u'web' in s.keys():
             for w in range(len(s["web"])):
                 title = s["web"][w]["value"]
-                title = ','.join(title).encode("UTF-8")
+                title = ', '.join(title)
                 subtitle = '网络翻译: ' + s["web"][w]["key"]
-                arg = url + "," + title
+
+                if tran == 'EtC':
+                    key = ''.join(s["web"][w]["key"])
+                    arg = [query, title, key, ' ']
+                else:
+                    value = ' '.join(s["web"][w]["value"])
+                    arg = [query, title, value, ' ']
+
+                arg = '$'.join(arg)
                 wf.add_item(
                     title=title, subtitle=subtitle, arg=arg, valid=True, icon=ICON_WEB)
 
     else:
         title = '有道也翻译不出来了'
         subtitle = '尝试一下去网站搜索'
-        arg = url + "," + title
+        arg = [query, ' ', ' ', ' ']
+        arg = '$'.join(arg)
         wf.add_item(
             title=title, subtitle=subtitle, arg=arg, valid=True, icon=ICON_DEFAULT)
 

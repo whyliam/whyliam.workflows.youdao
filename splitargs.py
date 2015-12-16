@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+import os
 from workflow import Workflow
 
 reload(sys)
@@ -8,10 +9,18 @@ sys.setdefaultencoding('utf8')
 
 def getargs(wf):
     query = sys.argv[1]
-    query = query.split(',')
-    part = sys.argv[2]
-    part = int(part)
-    print query[part]
+    query = query.split('$')
+    part = int(sys.argv[2])
+
+    if part == 1:
+        print query[1]
+    elif part == 2:
+        if query[2]:
+            bashCommand = "say --voice='Samantha' " + query[2]
+            os.system(bashCommand)
+        if query[3]:
+            bashCommand = "say --voice='Ting-Ting' " + query[3]
+            os.system(bashCommand)
     return 0
 
 if __name__ == '__main__':
