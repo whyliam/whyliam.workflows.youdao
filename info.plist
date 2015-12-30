@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>bundleid</key>
-	<string>com.whyliam.workflows.youdao</string>
+	<string>com.kaiye.workflows.youdao</string>
 	<key>category</key>
 	<string>Tools</string>
 	<key>connections</key>
@@ -19,6 +19,8 @@
 				<string></string>
 			</dict>
 		</array>
+		<key>6A8F8E8B-4808-4A45-A681-099ABBA5144F</key>
+		<array/>
 		<key>7C1ABC41-3B36-401F-96C7-30BCB39181FF</key>
 		<array>
 			<dict>
@@ -34,7 +36,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>9D65478B-1DB1-4198-B977-D538BCA74A4A</string>
+				<string>C11D2565-8CE6-4681-939E-56E8BFEDED90</string>
 				<key>modifiers</key>
 				<integer>262144</integer>
 				<key>modifiersubtext</key>
@@ -42,7 +44,7 @@
 			</dict>
 			<dict>
 				<key>destinationuid</key>
-				<string>4473C9D3-7A15-4D31-84F6-A096A7CFF46C</string>
+				<string>B4E481EB-6577-4586-A01A-496FF37EFACC</string>
 				<key>modifiers</key>
 				<integer>131072</integer>
 				<key>modifiersubtext</key>
@@ -64,10 +66,20 @@
 				<key>modifiersubtext</key>
 				<string>直接打印</string>
 			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>F92EE0BE-7B26-42BF-8580-593B56ACD948</string>
+				<key>modifiers</key>
+				<integer>524288</integer>
+				<key>modifiersubtext</key>
+				<string>保存至单词本</string>
+			</dict>
 		</array>
+		<key>F92EE0BE-7B26-42BF-8580-593B56ACD948</key>
+		<array/>
 	</dict>
 	<key>createdby</key>
-	<string>whyliam</string>
+	<string>kaiye</string>
 	<key>description</key>
 	<string>使用有道翻译你想知道的单词和语句</string>
 	<key>disabled</key>
@@ -81,37 +93,9 @@
 			<dict>
 				<key>applescript</key>
 				<string>on alfred_script(q)
-# get default browser name see: https://discussions.apple.com/thread/4570295?start=0&amp;tstart=0
-set browserName to do shell script "export VERSIONER_PERL_PREFER_32_BIT=yes; perl -MMac::InternetConfig -le 'print +(GetICHelper \"http\")[1]'"
-
-set AppleScript's text item delimiters to {"$"}
-set urlD to text item 1 of q
-set urlD to "http://dict.youdao.com/search?q="&amp;urlD
-
-if ((contents of browserName) is equal to "Google Chrome") then
-tell application browserName
-    tell (make new window )
-        activate
-    end tell
-end tell
-tell application "Google Chrome" to set URL of active tab of front window to urlD
-
-else if ((contents of browserName) is equal to "Safari") then
-# 新建窗口
-    tell application browserName
-        make new document at end of documents
-    end tell
-    
-    # 设置窗口位置
-    tell application "Safari"
-        activate
-    end tell
-    
-    # 打开 URL
-    tell application "Safari" to set URL of front document to urlD
-
-end if
-
+	set qq to quoted form of q
+	set search_word to (do shell script "echo " &amp; qq &amp; " | cut -d '$' -f1")
+	do shell script "open 'http://dict.youdao.com/search?q=" &amp; search_word &amp; "'"
 end alfred_script</string>
 				<key>cachescript</key>
 				<false/>
@@ -119,28 +103,55 @@ end alfred_script</string>
 			<key>type</key>
 			<string>alfred.workflow.action.applescript</string>
 			<key>uid</key>
-			<string>9D65478B-1DB1-4198-B977-D538BCA74A4A</string>
+			<string>C11D2565-8CE6-4681-939E-56E8BFEDED90</string>
 			<key>version</key>
 			<integer>0</integer>
 		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>concurrently</key>
-				<false/>
 				<key>escaping</key>
-				<integer>33</integer>
+				<integer>39</integer>
 				<key>script</key>
 				<string>/usr/bin/python splitargs.py "{query}" 2</string>
 				<key>type</key>
 				<integer>0</integer>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.output.script</string>
+			<string>alfred.workflow.action.script</string>
 			<key>uid</key>
-			<string>4473C9D3-7A15-4D31-84F6-A096A7CFF46C</string>
+			<string>B4E481EB-6577-4586-A01A-496FF37EFACC</string>
 			<key>version</key>
 			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>action</key>
+				<integer>1</integer>
+				<key>argument</key>
+				<integer>1</integer>
+				<key>argumenttext</key>
+				<string>d </string>
+				<key>hotkey</key>
+				<integer>-1</integer>
+				<key>hotmod</key>
+				<integer>524288</integer>
+				<key>hotstring</key>
+				<string>double tap</string>
+				<key>leftcursor</key>
+				<false/>
+				<key>modsmode</key>
+				<integer>0</integer>
+				<key>relatedAppsMode</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.hotkey</string>
+			<key>uid</key>
+			<string>6A8F8E8B-4808-4A45-A681-099ABBA5144F</string>
+			<key>version</key>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -150,15 +161,7 @@ end alfred_script</string>
 				<key>escaping</key>
 				<integer>32</integer>
 				<key>keyword</key>
-				<string>yd</string>
-				<key>queuedelaycustom</key>
-				<integer>3</integer>
-				<key>queuedelayimmediatelyinitially</key>
-				<true/>
-				<key>queuedelaymode</key>
-				<integer>0</integer>
-				<key>queuemode</key>
-				<integer>2</integer>
+				<string>d</string>
 				<key>runningsubtext</key>
 				<string>正在获取中...</string>
 				<key>script</key>
@@ -197,10 +200,8 @@ end alfred_script</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>concurrently</key>
-				<false/>
 				<key>escaping</key>
-				<integer>34</integer>
+				<integer>38</integer>
 				<key>script</key>
 				<string>/usr/bin/python splitargs.py "{query}" 1</string>
 				<key>type</key>
@@ -216,10 +217,8 @@ end alfred_script</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>concurrently</key>
-				<false/>
 				<key>escaping</key>
-				<integer>34</integer>
+				<integer>38</integer>
 				<key>script</key>
 				<string>/usr/bin/python splitargs.py "{query}" 1</string>
 				<key>type</key>
@@ -247,24 +246,32 @@ end alfred_script</string>
 			<key>version</key>
 			<integer>0</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>escaping</key>
+				<integer>38</integer>
+				<key>script</key>
+				<string>/usr/bin/python saveword.py "{query}" "uk"</string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>F92EE0BE-7B26-42BF-8580-593B56ACD948</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
 	</array>
 	<key>readme</key>
-	<string>有道翻译 workflow v1.2.1
+	<string>使用方法，选中需要翻译的文本，按两下 `alt` 键即可。选中结果后，配合以下功能键可实现不同功能：
 
-默认快捷键 "yd"，查看翻译结果。
-
-1. 英译中
-2. 中译英
-3. 翻译短语句子
-4. 打开有道翻译页面，查看详细内容
-5. 直接在打出翻译结果
-
-*功能*
-
-1. 按`回车` 复制
-2. 按`Control+回车` 打开有道翻译页面
-3. 按`Command+回车` 直接在打出翻译结果
-4. 按`Shift+回车` 直接发音</string>
+* `enter` 复制
+* `alt + enter` 存入本地单词本
+* `shift + enter` 直接发音
+* `control + enter` 打开有道翻译页面
+* `command + enter` 直接在光标处打出翻译结果</string>
 	<key>uidata</key>
 	<dict>
 		<key>0907BEF4-816F-48FF-B157-03F5C2AACEAB</key>
@@ -275,12 +282,12 @@ end alfred_script</string>
 		<key>27E60581-8105-41DD-8E29-4FE811179098</key>
 		<dict>
 			<key>ypos</key>
-			<real>240</real>
+			<real>260</real>
 		</dict>
-		<key>4473C9D3-7A15-4D31-84F6-A096A7CFF46C</key>
+		<key>6A8F8E8B-4808-4A45-A681-099ABBA5144F</key>
 		<dict>
 			<key>ypos</key>
-			<real>120</real>
+			<real>140</real>
 		</dict>
 		<key>7C1ABC41-3B36-401F-96C7-30BCB39181FF</key>
 		<dict>
@@ -290,20 +297,30 @@ end alfred_script</string>
 		<key>91C343E7-50D8-4B0D-9034-1C16C20DA8D4</key>
 		<dict>
 			<key>ypos</key>
-			<real>120</real>
+			<real>140</real>
 		</dict>
-		<key>9D65478B-1DB1-4198-B977-D538BCA74A4A</key>
+		<key>B4E481EB-6577-4586-A01A-496FF37EFACC</key>
 		<dict>
 			<key>ypos</key>
-			<real>10</real>
+			<real>140</real>
+		</dict>
+		<key>C11D2565-8CE6-4681-939E-56E8BFEDED90</key>
+		<dict>
+			<key>ypos</key>
+			<real>20</real>
 		</dict>
 		<key>DBA62127-3B78-4B80-B82B-1C6AEC393003</key>
 		<dict>
 			<key>ypos</key>
-			<real>240</real>
+			<real>260</real>
+		</dict>
+		<key>F92EE0BE-7B26-42BF-8580-593B56ACD948</key>
+		<dict>
+			<key>ypos</key>
+			<real>510</real>
 		</dict>
 	</dict>
 	<key>webaddress</key>
-	<string>https://github.com/liszd/whyliam.workflows.youdao</string>
+	<string>https://github.com/kaiye/workflows-youdao</string>
 </dict>
 </plist>

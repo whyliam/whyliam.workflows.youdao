@@ -1,23 +1,14 @@
-# whyliam.workflows.youdao
+# kaiye/workflows-youdao
 
-有道翻译 workflow v1.2.1
+使用方法，选中需要翻译的文本，按两下 `alt` 键即可。选中结果后，配合以下功能键可实现不同功能：
 
-默认快捷键 "yd"，查看翻译结果。
+* `enter` 复制
+* `alt + enter` 存入本地单词本
+* `shift + enter` 直接发音
+* `control + enter` 打开有道翻译页面
+* `command + enter` 直接在光标处打出翻译结果
 
-1. 英译中
-2. 中译英
-3. 翻译短语句子
-4. 打开有道翻译页面，查看详细内容
-5. 直接在打出翻译结果
-
-*功能*
-
-1. 按`回车` 复制
-2. 按`Control+回车` 打开有道翻译页面
-3. 按`Command+回车` 直接在打出翻译结果
-4. 按`Shift+回车` 直接发音
-
-[下载](https://github.com/liszd/whyliam.workflows.youdao/blob/master/whyliam.workflows.youdao.alfredworkflow?raw=true)
+[下载](https://github.com/kaiye/workflows-youdao/blob/master/whyliam.workflows.youdao.alfredworkflow?raw=true)
 
 ## Demo
 
@@ -41,26 +32,4 @@
 
 ![](http://ww3.sinaimg.cn/large/48910e01gw1eructbvt9rg213p0jh0wi.gif)
 
----
-
-## The MIT License (MIT)
-
-Copyright (c) 2015 liszd1992@gmail.com
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+注：本插件 folk 自 liszd/whyliam.workflows.youdao 的 v1.2.1 版本，由于改动较大就不好意思提 PR 了，协议保持 MIT 不变，请随意订制。
