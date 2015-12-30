@@ -252,7 +252,7 @@ end alfred_script</string>
 				<key>escaping</key>
 				<integer>38</integer>
 				<key>script</key>
-				<string>/usr/bin/python saveword.py "{query}" "uk"</string>
+				<string>/usr/bin/python saveword.py "{query}" "us"</string>
 				<key>type</key>
 				<integer>0</integer>
 			</dict>
