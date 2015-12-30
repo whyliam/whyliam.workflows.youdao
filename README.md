@@ -8,27 +8,33 @@
 * `control + enter` 打开有道翻译页面
 * `command + enter` 直接在光标处打出翻译结果
 
-[下载](https://github.com/kaiye/workflows-youdao/blob/master/whyliam.workflows.youdao.alfredworkflow?raw=true)
+## 安装
 
-## Demo
+### 1、[点击下载](https://github.com/kaiye/workflows-youdao/blob/master/youdao.alfredworkflow?raw=true)
 
-#### 英译中
+### 2、安装后设置双击快捷键
+
+![按两下 alt 设置快捷键](https://cloud.githubusercontent.com/assets/344283/12050058/6cdd3cea-af2a-11e5-8eab-66e89e4d4e18.gif)
+
+## 演示
+
+### 英译中
 
 ![](http://ww2.sinaimg.cn/large/48910e01gw1erucr05z85g213p0kbqhn.gif)
 
-#### 中译英
+### 中译英
 
 ![](http://ww2.sinaimg.cn/large/48910e01gw1erucrd5tnmg213p0kbk6q.gif)
 
-#### 翻译短语
+### 翻译短语
 
 ![](http://ww2.sinaimg.cn/large/48910e01gw1erucrvb9a8g213p0kbqhn.gif)
 
-#### 打开有道翻译页面 - 按`Control+回车`
+### 使用浏览器搜索
 
 ![](http://ww4.sinaimg.cn/large/48910e01gw1erucsmvtkgg213l0kaqq2.gif)
 
-#### 直接在打出翻译结果 - 按`Command+回车`
+### 输出结果到光标所在应用程序
 
 ![](http://ww3.sinaimg.cn/large/48910e01gw1eructbvt9rg213p0jh0wi.gif)
 
