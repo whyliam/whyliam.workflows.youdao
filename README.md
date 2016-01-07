@@ -16,6 +16,20 @@
 
 ![按两下 alt 设置快捷键](https://cloud.githubusercontent.com/assets/344283/12050058/6cdd3cea-af2a-11e5-8eab-66e89e4d4e18.gif)
 
+
+
+### 3、配置有道词典账号信息
+
+![配置账号信息](https://cloud.githubusercontent.com/assets/344283/12175374/c776aef2-b59c-11e5-90ec-20e3801ff7ed.png)
+
+如上图所示，双击 alt 相关的 Run Script，在弹出的 Script 框中参照以上格式配置相关参数：
+
+* `-filepath`  指定本地单词本的绝对路径，若不设置则默认为当前用户 Documents/Alfred-youdao-wordbook.xml 路径
+* `-username` 有道词典用户邮箱，用于模拟登录、同步单词信息
+* `-password` 有道词典用户密码
+
+
+
 ## 演示
 
 ### 英译中
@@ -38,4 +52,4 @@
 
 ![](http://ww3.sinaimg.cn/large/48910e01gw1eructbvt9rg213p0jh0wi.gif)
 
-注：本插件 folk 自 liszd/whyliam.workflows.youdao 的 v1.2.1 版本，由于改动较大就不好意思提 PR 了，协议保持 MIT 不变，请随意订制。
+注：本插件 fork 自 liszd/whyliam.workflows.youdao 的 v1.2.1 版本，由于改动较大就不提 PR 了，协议保持 MIT 不变，请随意订制。
