@@ -71,7 +71,12 @@ class SaveWord(object):
             return False
 
     def syncToYoudao(self):
-        post_data = urllib.urlencode(self.word)
+        post_data = urllib.urlencode({
+            'word' : self.word.get('word'),
+            'phonetic' : self.word.get('phonetic'),
+            'desc': self.word.get('trans'),
+            'tags' : self.word.get('tags'),
+        })
         self.opener.addheaders = fake_header + [
             ('Referer', 'http://dict.youdao.com/wordbook/wordlist'),
         ]
