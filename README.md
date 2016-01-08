@@ -1,9 +1,9 @@
 # kaiye/workflows-youdao
 
-使用方法，选中需要翻译的文本，按两下 `alt` 键即可。选中结果后，配合以下功能键可实现不同功能：
+使用方法，选中需要翻译的文本，按两下 `command` 键即可。选中结果后，配合以下功能键可实现不同功能：
 
-* `enter` 复制
-* `alt + enter` 存入本地单词本
+* `enter` 同步单词到有道在线单词本（若未配置有道账号则保存至本地单词本）
+* `alt + enter` 翻译至剪切板
 * `shift + enter` 直接发音
 * `control + enter` 打开有道翻译页面
 * `command + enter` 直接在光标处打出翻译结果
@@ -14,7 +14,7 @@
 
 ### 2、安装后设置双击快捷键
 
-![按两下 alt 设置快捷键](https://cloud.githubusercontent.com/assets/344283/12050058/6cdd3cea-af2a-11e5-8eab-66e89e4d4e18.gif)
+![按两下 command 设置快捷键](https://cloud.githubusercontent.com/assets/344283/12189204/b0d21524-b5f6-11e5-9cc8-33c17561f9ee.gif)
 
 
 
