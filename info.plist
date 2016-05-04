@@ -82,7 +82,7 @@
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
-				<integer>34</integer>
+				<integer>35</integer>
 				<key>script</key>
 				<string>query={query}
 open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $1}'`"</string>
