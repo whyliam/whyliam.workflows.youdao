@@ -1,6 +1,6 @@
 # whyliam.workflows.youdao
 
-## 有道翻译 workflow v1.2.2
+## 有道翻译 workflow v1.2.3
 
 默认快捷键 "yd"，查看翻译结果。
 
@@ -17,7 +17,7 @@
 3. 按`Command+回车` 直接在打出翻译结果
 4. 按`Shift+回车` 直接发音
 
-[点击下载](https://github.com/liszd/whyliam.workflows.youdao/blob/master/whyliam.workflows.youdao.alfredworkflow?raw=true)
+[点击下载](https://github.com/liszd/whyliam.workflows.youdao/releases/download/1.2.3/whyliam.workflows.youdao.alfredworkflow)
 
 ### 其他版本
 
