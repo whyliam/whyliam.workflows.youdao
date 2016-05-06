@@ -34,7 +34,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>9D65478B-1DB1-4198-B977-D538BCA74A4A</string>
+				<string>F99C4C55-10F5-4D62-A77D-F27058629B21</string>
 				<key>modifiers</key>
 				<integer>262144</integer>
 				<key>modifiersubtext</key>
@@ -79,47 +79,20 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>applescript</key>
-				<string>on alfred_script(q)
-# get default browser name see: https://discussions.apple.com/thread/4570295?start=0&amp;tstart=0
-set browserName to do shell script "export VERSIONER_PERL_PREFER_32_BIT=yes; perl -MMac::InternetConfig -le 'print +(GetICHelper \"http\")[1]'"
-
-set AppleScript's text item delimiters to {"$"}
-set urlD to text item 1 of q
-set urlD to "http://dict.youdao.com/search?q="&amp;urlD
-
-if ((contents of browserName) is equal to "Google Chrome") then
-tell application browserName
-    tell (make new window )
-        activate
-    end tell
-end tell
-tell application "Google Chrome" to set URL of active tab of front window to urlD
-
-else if ((contents of browserName) is equal to "Safari") then
-# 新建窗口
-    tell application browserName
-        make new document at end of documents
-    end tell
-    
-    # 设置窗口位置
-    tell application "Safari"
-        activate
-    end tell
-    
-    # 打开 URL
-    tell application "Safari" to set URL of front document to urlD
-
-end if
-
-end alfred_script</string>
-				<key>cachescript</key>
+				<key>concurrently</key>
 				<false/>
+				<key>escaping</key>
+				<integer>35</integer>
+				<key>script</key>
+				<string>query={query}
+open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $1}'`"</string>
+				<key>type</key>
+				<integer>0</integer>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.action.applescript</string>
+			<string>alfred.workflow.action.script</string>
 			<key>uid</key>
-			<string>9D65478B-1DB1-4198-B977-D538BCA74A4A</string>
+			<string>F99C4C55-10F5-4D62-A77D-F27058629B21</string>
 			<key>version</key>
 			<integer>0</integer>
 		</dict>
@@ -292,15 +265,15 @@ end alfred_script</string>
 			<key>ypos</key>
 			<real>120</real>
 		</dict>
-		<key>9D65478B-1DB1-4198-B977-D538BCA74A4A</key>
-		<dict>
-			<key>ypos</key>
-			<real>10</real>
-		</dict>
 		<key>DBA62127-3B78-4B80-B82B-1C6AEC393003</key>
 		<dict>
 			<key>ypos</key>
 			<real>240</real>
+		</dict>
+		<key>F99C4C55-10F5-4D62-A77D-F27058629B21</key>
+		<dict>
+			<key>ypos</key>
+			<real>10</real>
 		</dict>
 	</dict>
 	<key>webaddress</key>
