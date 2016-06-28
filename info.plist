@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>bundleid</key>
-	<string>com.whyliam.workflows.youdao</string>
+	<string>whyliam.workflows.youdao</string>
 	<key>category</key>
 	<string>Tools</string>
 	<key>connections</key>
