@@ -1,6 +1,6 @@
 # whyliam.workflows.youdao
 
-## 有道翻译 workflow v1.2.3
+## 有道翻译 workflow v1.2.4
 
 默认快捷键 "yd"，查看翻译结果。
 
@@ -16,6 +16,7 @@
 2. 按`Control+回车` 打开有道翻译页面
 3. 按`Command+回车` 直接在打出翻译结果
 4. 按`Shift+回车` 直接发音
+5. 选中文字 双击`Command`进行翻译(暂定)
 
 ### 问题
 

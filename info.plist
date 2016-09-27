@@ -17,6 +17,8 @@
 				<integer>0</integer>
 				<key>modifiersubtext</key>
 				<string></string>
+				<key>vitoclose</key>
+				<false/>
 			</dict>
 		</array>
 		<key>7C1ABC41-3B36-401F-96C7-30BCB39181FF</key>
@@ -28,6 +30,8 @@
 				<integer>0</integer>
 				<key>modifiersubtext</key>
 				<string></string>
+				<key>vitoclose</key>
+				<false/>
 			</dict>
 		</array>
 		<key>91C343E7-50D8-4B0D-9034-1C16C20DA8D4</key>
@@ -39,6 +43,8 @@
 				<integer>262144</integer>
 				<key>modifiersubtext</key>
 				<string>从有道网页打开</string>
+				<key>vitoclose</key>
+				<false/>
 			</dict>
 			<dict>
 				<key>destinationuid</key>
@@ -47,6 +53,8 @@
 				<integer>131072</integer>
 				<key>modifiersubtext</key>
 				<string>有道发音</string>
+				<key>vitoclose</key>
+				<false/>
 			</dict>
 			<dict>
 				<key>destinationuid</key>
@@ -55,6 +63,8 @@
 				<integer>0</integer>
 				<key>modifiersubtext</key>
 				<string></string>
+				<key>vitoclose</key>
+				<false/>
 			</dict>
 			<dict>
 				<key>destinationuid</key>
@@ -63,6 +73,8 @@
 				<integer>1048576</integer>
 				<key>modifiersubtext</key>
 				<string>直接打印</string>
+				<key>vitoclose</key>
+				<false/>
 			</dict>
 		</array>
 	</dict>
@@ -86,6 +98,10 @@
 				<key>script</key>
 				<string>query={query}
 open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $1}'`"</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
 				<key>type</key>
 				<integer>0</integer>
 			</dict>
@@ -94,7 +110,7 @@ open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $
 			<key>uid</key>
 			<string>F99C4C55-10F5-4D62-A77D-F27058629B21</string>
 			<key>version</key>
-			<integer>0</integer>
+			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -105,19 +121,25 @@ open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $
 				<integer>33</integer>
 				<key>script</key>
 				<string>/usr/bin/python splitargs.py "{query}" 2</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
 				<key>type</key>
 				<integer>0</integer>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.output.script</string>
+			<string>alfred.workflow.action.script</string>
 			<key>uid</key>
 			<string>4473C9D3-7A15-4D31-84F6-A096A7CFF46C</string>
 			<key>version</key>
-			<integer>0</integer>
+			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
 				<key>argumenttype</key>
 				<integer>0</integer>
 				<key>escaping</key>
@@ -129,13 +151,17 @@ open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $
 				<key>queuedelayimmediatelyinitially</key>
 				<true/>
 				<key>queuedelaymode</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>queuemode</key>
 				<integer>2</integer>
 				<key>runningsubtext</key>
 				<string>正在获取中...</string>
 				<key>script</key>
 				<string>/usr/bin/python youdao.py "{query}"</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
 				<key>subtext</key>
 				<string>使用有道翻译你想知道的单词和语句 {query}</string>
 				<key>title</key>
@@ -150,7 +176,7 @@ open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $
 			<key>uid</key>
 			<string>91C343E7-50D8-4B0D-9034-1C16C20DA8D4</string>
 			<key>version</key>
-			<integer>0</integer>
+			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -159,13 +185,15 @@ open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $
 				<false/>
 				<key>clipboardtext</key>
 				<string>{query}</string>
+				<key>transient</key>
+				<false/>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.output.clipboard</string>
 			<key>uid</key>
 			<string>DBA62127-3B78-4B80-B82B-1C6AEC393003</string>
 			<key>version</key>
-			<integer>0</integer>
+			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -176,6 +204,10 @@ open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $
 				<integer>34</integer>
 				<key>script</key>
 				<string>/usr/bin/python splitargs.py "{query}" 1</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
 				<key>type</key>
 				<integer>0</integer>
 			</dict>
@@ -184,7 +216,7 @@ open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $
 			<key>uid</key>
 			<string>27E60581-8105-41DD-8E29-4FE811179098</string>
 			<key>version</key>
-			<integer>0</integer>
+			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -195,6 +227,10 @@ open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $
 				<integer>34</integer>
 				<key>script</key>
 				<string>/usr/bin/python splitargs.py "{query}" 1</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
 				<key>type</key>
 				<integer>0</integer>
 			</dict>
@@ -203,7 +239,7 @@ open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $
 			<key>uid</key>
 			<string>7C1ABC41-3B36-401F-96C7-30BCB39181FF</string>
 			<key>version</key>
-			<integer>0</integer>
+			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -212,19 +248,50 @@ open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $
 				<true/>
 				<key>clipboardtext</key>
 				<string>{query}</string>
+				<key>transient</key>
+				<false/>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.output.clipboard</string>
 			<key>uid</key>
 			<string>0907BEF4-816F-48FF-B157-03F5C2AACEAB</string>
 			<key>version</key>
-			<integer>0</integer>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>action</key>
+				<integer>1</integer>
+				<key>argument</key>
+				<integer>1</integer>
+				<key>argumenttext</key>
+				<string>yd </string>
+				<key>hotkey</key>
+				<integer>-1</integer>
+				<key>hotmod</key>
+				<integer>1048576</integer>
+				<key>hotstring</key>
+				<string>double tap</string>
+				<key>leftcursor</key>
+				<false/>
+				<key>modsmode</key>
+				<integer>0</integer>
+				<key>relatedAppsMode</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.hotkey</string>
+			<key>uid</key>
+			<string>5751065C-52C1-4D19-8F7D-03B730BFE440</string>
+			<key>version</key>
+			<integer>2</integer>
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>有道翻译 workflow v1.2.3
+	<string>有道翻译 Workflow v1.2.4
 
-默认快捷键 "yd"，查看翻译结果。
+默认快捷键 "yd", 查看翻译结果。
 
 1. 英译中
 2. 中译英
@@ -234,48 +301,72 @@ open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $
 
 *功能*
 
-1. 按`回车` 复制
-2. 按`Control+回车` 打开有道翻译页面
-3. 按`Command+回车` 直接在打出翻译结果
-4. 按`Shift+回车` 直接发音</string>
+1. 按`回车`复制
+2. 按`Control+回车`打开有道翻译页面
+3. 按`Comman+回车`直接在打出翻译结果
+4. 按`Shift+回车`直接发音
+5. 选中文字 双击`Command`进行翻译(暂定)</string>
 	<key>uidata</key>
 	<dict>
 		<key>0907BEF4-816F-48FF-B157-03F5C2AACEAB</key>
 		<dict>
+			<key>xpos</key>
+			<integer>700</integer>
 			<key>ypos</key>
 			<real>390</real>
 		</dict>
 		<key>27E60581-8105-41DD-8E29-4FE811179098</key>
 		<dict>
+			<key>xpos</key>
+			<integer>500</integer>
 			<key>ypos</key>
 			<real>240</real>
 		</dict>
 		<key>4473C9D3-7A15-4D31-84F6-A096A7CFF46C</key>
 		<dict>
+			<key>xpos</key>
+			<integer>700</integer>
 			<key>ypos</key>
 			<real>120</real>
 		</dict>
+		<key>5751065C-52C1-4D19-8F7D-03B730BFE440</key>
+		<dict>
+			<key>xpos</key>
+			<integer>310</integer>
+			<key>ypos</key>
+			<integer>480</integer>
+		</dict>
 		<key>7C1ABC41-3B36-401F-96C7-30BCB39181FF</key>
 		<dict>
+			<key>xpos</key>
+			<integer>500</integer>
 			<key>ypos</key>
 			<real>390</real>
 		</dict>
 		<key>91C343E7-50D8-4B0D-9034-1C16C20DA8D4</key>
 		<dict>
+			<key>xpos</key>
+			<integer>300</integer>
 			<key>ypos</key>
 			<real>120</real>
 		</dict>
 		<key>DBA62127-3B78-4B80-B82B-1C6AEC393003</key>
 		<dict>
+			<key>xpos</key>
+			<integer>700</integer>
 			<key>ypos</key>
 			<real>240</real>
 		</dict>
 		<key>F99C4C55-10F5-4D62-A77D-F27058629B21</key>
 		<dict>
+			<key>xpos</key>
+			<integer>500</integer>
 			<key>ypos</key>
 			<real>10</real>
 		</dict>
 	</dict>
+	<key>version</key>
+	<string>1.2.4</string>
 	<key>webaddress</key>
 	<string>https://github.com/liszd/whyliam.workflows.youdao</string>
 </dict>
