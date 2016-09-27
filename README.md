@@ -29,7 +29,7 @@
 
 ### 下载
 
-[点击下载](https://github.com/liszd/whyliam.workflows.youdao/releases/download/1.2.3/whyliam.workflows.youdao.alfredworkflow)
+[点击下载](https://github.com/liszd/whyliam.workflows.youdao/releases/download/1.2.4/whyliam.workflows.youdao.alfredworkflow)
 
 ## Demo
 
