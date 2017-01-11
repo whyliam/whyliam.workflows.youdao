@@ -111,7 +111,6 @@ if __name__ == '__main__':
         'github_slug': 'liszd/whyliam.workflows.youdao',
         'frequency': 7
     })
-
-    sys.exit(wf.run(main))
     if wf.update_available:
         wf.start_update()
+    sys.exit(wf.run(main))
