@@ -267,12 +267,14 @@ open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $
 				<integer>1</integer>
 				<key>argumenttext</key>
 				<string>yd </string>
+				<key>focusedappvariable</key>
+				<false/>
+				<key>focusedappvariablename</key>
+				<string></string>
 				<key>hotkey</key>
-				<integer>-1</integer>
+				<integer>0</integer>
 				<key>hotmod</key>
-				<integer>1048576</integer>
-				<key>hotstring</key>
-				<string>double tap</string>
+				<integer>0</integer>
 				<key>leftcursor</key>
 				<false/>
 				<key>modsmode</key>
@@ -289,7 +291,7 @@ open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>有道翻译 Workflow v1.2.4
+	<string>有道翻译 Workflow v1.2.5
 
 默认快捷键 "yd", 查看翻译结果。
 
@@ -366,7 +368,7 @@ open "http://dict.youdao.com/search?q=`echo $query | awk 'BEGIN{FS="$"} {print $
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>1.2.4</string>
+	<string>1.2.5</string>
 	<key>webaddress</key>
 	<string>https://github.com/liszd/whyliam.workflows.youdao</string>
 </dict>

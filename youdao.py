@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import random
 import urllib
 from workflow import Workflow, ICON_WEB, web
 import sys
@@ -8,18 +9,24 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-apikey = 1331254833
-keyfrom = 'whyliam'
+apikey = [1331254833, 2002493135, 2002493136, 2002493137,
+          2002493138, 2002493139, 2002493140, 2002493141,
+          2002493142, 2002493143, 1947745089, 1947745090]
+
+keyfrom = ['whyliam', 'whyliam-wf-1', 'whyliam-wf-2', 'whyliam-wf-3',
+           'whyliam-wf-4', 'whyliam-wf-5', 'whyliam-wf-6', 'whyliam-wf-7',
+           'whyliam-wf-8', 'whyliam-wf-9', 'whyliam-wf-10', 'whyliam-wf-11']
+
 ICON_DEFAULT = 'icon.png'
 ICON_PHONETIC = 'icon_phonetic.png'
 ICON_BASIC = 'icon_basic.png'
 ICON_WEB = 'icon_web.png'
 
-
 def get_web_data(query):
     query = urllib.quote(str(query))
-    url = 'http://fanyi.youdao.com/openapi.do?keyfrom=' + keyfrom + \
-        '&key=' + str(apikey) + \
+    i = random.randrange(0, 12, 1)
+    url = 'http://fanyi.youdao.com/openapi.do?keyfrom=' + keyfrom[i] + \
+        '&key=' + str(apikey[i]) + \
         '&type=data&doctype=json&version=1.1&q=' + query
     return web.get(url).json()
 
@@ -111,6 +118,7 @@ if __name__ == '__main__':
         'github_slug': 'liszd/whyliam.workflows.youdao',
         'frequency': 7
     })
+
     if wf.update_available:
         wf.start_update()
     sys.exit(wf.run(main))
