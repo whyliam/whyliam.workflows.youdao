@@ -1,6 +1,6 @@
 # whyliam.workflows.youdao
 
-## 有道翻译 workflow v1.2.5
+## 有道翻译 workflow v2.0.0
 
 默认快捷键 "yd"，查看翻译结果。
 
