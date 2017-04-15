@@ -174,7 +174,7 @@
 				<key>argumenttype</key>
 				<integer>0</integer>
 				<key>escaping</key>
-				<integer>3</integer>
+				<integer>35</integer>
 				<key>keyword</key>
 				<string>yd</string>
 				<key>queuedelaycustom</key>
@@ -232,7 +232,7 @@
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
-				<integer>35</integer>
+				<integer>32</integer>
 				<key>script</key>
 				<string>/usr/bin/python splitargs.py "{query}" 1</string>
 				<key>scriptargtype</key>
@@ -288,7 +288,7 @@
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
-				<integer>35</integer>
+				<integer>32</integer>
 				<key>script</key>
 				<string>/usr/bin/python splitargs.py "{query}" 1</string>
 				<key>scriptargtype</key>
@@ -326,7 +326,7 @@
 	<key>readme</key>
 	<string>有道翻译 Workflow v2.0.0
 
-默认快捷键 "yd", 查看翻译结果。
+默认快捷键 yd, 查看翻译结果。
 
 1. 英译中
 2. 中译英
@@ -334,13 +334,16 @@
 4. 打开有道翻译页面，查看详细内容
 5. 直接在打出翻译结果
 
-*功能*
+功能
 
 1. 按`回车`复制
 2. 按`Control+回车`打开有道翻译页面
 3. 按`Comman+回车`直接在打出翻译结果
 4. 按`Shift+回车`直接发音
-5. 选中文字 双击`Command`进行翻译(暂定)</string>
+5. 选中文字 双击`Command`进行翻译
+
+更多
+参见 https://blog.naaln.com/2017/04/alfred-youdao-intro/</string>
 	<key>uidata</key>
 	<dict>
 		<key>0907BEF4-816F-48FF-B157-03F5C2AACEAB</key>
@@ -412,9 +415,9 @@
 	<key>variables</key>
 	<dict>
 		<key>youdao_key</key>
-		<string></string>
+		<string>1947745091</string>
 		<key>youdao_keyfrom</key>
-		<string></string>
+		<string>whyliam-wf-12</string>
 	</dict>
 	<key>variablesdontexport</key>
 	<array>

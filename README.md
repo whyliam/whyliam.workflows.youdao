@@ -2,7 +2,7 @@
 
 ## 有道翻译 workflow v2.0.0
 
-默认快捷键 "yd"，查看翻译结果。
+默认快捷键 `yd`，查看翻译结果。
 
 1. 英译中
 2. 中译英
@@ -13,45 +13,57 @@
 ### 功能
 
 1. 按`回车` 复制
-2. 按`Control+回车` 打开有道翻译页面
-3. 按`Command+回车` 直接在打出翻译结果
-4. 按`Shift+回车` 直接发音
-5. 选中文字 双击`Command`进行翻译(暂定)
-
-### 问题
-
-如果出现`No JSON object could be decoded`
-
-![No JSON object could be decoded](https://cloud.githubusercontent.com/assets/12092275/16805774/590a4064-4944-11e6-9b12-d8218024c032.png)
-
-请删除该文件
-`/Users/用户名/Library/Application\ Support/Alfred\ 3/Workflow\ Data/whyliam.workflows.youdao`
+2. 按`Control ⌃+回车` 打开有道翻译页面
+3. 按`Command ⌘+回车` 直接在打出翻译结果
+4. 按`Shift ⇧+回车` 直接发音
+5. 选中文字 双击`Option ⌥`进行翻译
 
 ### 下载
 
-[点击下载](https://github.com/liszd/whyliam.workflows.youdao/releases/download/1.2.5/whyliam.workflows.youdao.alfredworkflow)
+[点击下载](https://github.com/liszd/whyliam.workflows.youdao/releases/download/2.0.0/whyliam.workflows.youdao.alfredworkflow)
 
-## Demo
+### 安装
+
+1. [下载](https://github.com/liszd/whyliam.workflows.youdao/releases)最新版本双击安装
+2. [注册](http://fanyi.youdao.com/openapi?path=data-mode)有道翻译API
+3. 在Alfred的设置中填入对应的`Key`和`Keyfrom`
+![](http://ww2.sinaimg.cn/large/006tNbRwgy1feno2vevklj31a30os0u5.jpg)
+4. 在Alfred的设置中设置快捷方式键
+![](http://ww2.sinaimg.cn/large/006tNbRwgy1feno6pzaxdj31a60p0jsl.jpg)
+
+### 演示
 
 #### 英译中
 
-![](http://ww2.sinaimg.cn/large/48910e01gw1erucr05z85g213p0kbqhn.gif)
+![](http://ww3.sinaimg.cn/large/006tNbRwgy1fenonlxdjwg30sv0r7wkd.gif)
 
 #### 中译英
 
-![](http://ww2.sinaimg.cn/large/48910e01gw1erucrd5tnmg213p0kbk6q.gif)
+![](http://ww1.sinaimg.cn/large/006tNbRwgy1fenonzclvfg30sw0r90zo.gif)
 
 #### 翻译短语
 
-![](http://ww2.sinaimg.cn/large/48910e01gw1erucrvb9a8g213p0kbqhn.gif)
+![](http://ww3.sinaimg.cn/large/006tNbRwgy1fenooolrkpg30t00r47bg.gif)
 
-#### 打开有道翻译页面 - 按`Control+回车`
+#### 发音 - 按`Shift ⇧+回车`
 
-![](http://ww4.sinaimg.cn/large/48910e01gw1erucsmvtkgg213l0kaqq2.gif)
+![](http://ww3.sinaimg.cn/large/006tNbRwgy1fenooolrkpg30t00r47bg.gif)
 
-#### 直接在打出翻译结果 - 按`Command+回车`
+#### 打开有道翻译页面 - 按`Control ⌃+回车`
 
-![](http://ww3.sinaimg.cn/large/48910e01gw1eructbvt9rg213p0jh0wi.gif)
+![](http://ww2.sinaimg.cn/large/006tNbRwgy1fenopnjw9qg30tj0r5n8k.gif)
+
+#### 直接在打出翻译结果 - 按`Command ⌘+回车`
+
+![](http://ww3.sinaimg.cn/large/006tNbRwgy1fenomln8jdg30sx0r4wg2.gif)
+
+#### 双击快速翻译 - 双击`Option ⌥`
+
+![](http://ww1.sinaimg.cn/large/006tNbRwgy1fenosusv0bg30qn0qpq7a.gif)
+
+### 更多
+
+更多问题参见[Alfred 有道翻译简介](https://blog.naaln.com/2017/04/alfred-youdao-intro/)
 
 ---
 
