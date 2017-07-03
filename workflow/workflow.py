@@ -21,6 +21,7 @@ up your Python script to best utilise the :class:`Workflow` object.
 
 from __future__ import print_function, unicode_literals
 
+import atexit
 import binascii
 from contextlib import contextmanager
 import cPickle
@@ -804,6 +805,7 @@ class LockFile(object):
         self.timeout = timeout
         self.delay = delay
         self._locked = False
+        atexit.register(self.release)
 
     @property
     def locked(self):
@@ -817,11 +819,14 @@ class LockFile(object):
         ``False``.
 
         Otherwise, check every `self.delay` seconds until it acquires
-        lock or exceeds `self.timeout` and raises an exception.
+        lock or exceeds `self.timeout` and raises an `~AcquisitionError`.
 
         """
         start = time.time()
         while True:
+
+            self._validate_lockfile()
+
             try:
                 fd = os.open(self.lockfile, os.O_CREAT | os.O_EXCL | os.O_RDWR)
                 with os.fdopen(fd, 'w') as fd:
@@ -830,6 +835,7 @@ class LockFile(object):
             except OSError as err:
                 if err.errno != errno.EEXIST:  # pragma: no cover
                     raise
+
                 if self.timeout and (time.time() - start) >= self.timeout:
                     raise AcquisitionError('Lock acquisition timed out.')
                 if not blocking:
@@ -839,10 +845,36 @@ class LockFile(object):
         self._locked = True
         return True
 
+    def _validate_lockfile(self):
+        """Check existence and validity of lockfile.
+
+        If the lockfile exists, but contains an invalid PID
+        or the PID of a non-existant process, it is removed.
+
+        """
+        try:
+            with open(self.lockfile) as fp:
+                s = fp.read()
+        except Exception:
+            return
+
+        try:
+            pid = int(s)
+        except ValueError:
+            return self.release()
+
+        from background import _process_exists
+        if not _process_exists(pid):
+            self.release()
+
     def release(self):
         """Release the lock by deleting `self.lockfile`."""
         self._locked = False
-        os.unlink(self.lockfile)
+        try:
+            os.unlink(self.lockfile)
+        except (OSError, IOError) as err:  # pragma: no cover
+            if err.errno != 2:
+                raise err
 
     def __enter__(self):
         """Acquire lock."""
@@ -1942,26 +1974,30 @@ class Workflow(object):
         By default, :meth:`filter` uses all of the following flags (i.e.
         :const:`MATCH_ALL`). The tests are always run in the given order:
 
-        1. :const:`MATCH_STARTSWITH` : Item search key startswith
-            ``query``(case-insensitive).
-        2. :const:`MATCH_CAPITALS` : The list of capital letters in item
-            search key starts with ``query`` (``query`` may be
-            lower-case). E.g., ``of`` would match ``OmniFocus``,
-            ``gc`` would match ``Google Chrome``.
-        3. :const:`MATCH_ATOM` : Search key is split into "atoms" on
-            non-word characters (.,-,' etc.). Matches if ``query`` is
-            one of these atoms (case-insensitive).
-        4. :const:`MATCH_INITIALS_STARTSWITH` : Initials are the first
-            characters of the above-described "atoms" (case-insensitive).
-        5. :const:`MATCH_INITIALS_CONTAIN` : ``query`` is a substring of
-            the above-described initials.
-        6. :const:`MATCH_INITIALS` : Combination of (4) and (5).
-        7. :const:`MATCH_SUBSTRING` : Match if ``query`` is a substring
-            of item search key (case-insensitive).
-        8. :const:`MATCH_ALLCHARS` : Matches if all characters in
-            ``query`` appear in item search key in the same order
+        1. :const:`MATCH_STARTSWITH`
+            Item search key starts with ``query`` (case-insensitive).
+        2. :const:`MATCH_CAPITALS`
+            The list of capital letters in item search key starts with
+            ``query`` (``query`` may be lower-case). E.g., ``of``
+            would match ``OmniFocus``, ``gc`` would match ``Google Chrome``.
+        3. :const:`MATCH_ATOM`
+            Search key is split into "atoms" on non-word characters
+            (.,-,' etc.). Matches if ``query`` is one of these atoms
             (case-insensitive).
-        9. :const:`MATCH_ALL` : Combination of all the above.
+        4. :const:`MATCH_INITIALS_STARTSWITH`
+            Initials are the first characters of the above-described
+            "atoms" (case-insensitive).
+        5. :const:`MATCH_INITIALS_CONTAIN`
+            ``query`` is a substring of the above-described initials.
+        6. :const:`MATCH_INITIALS`
+            Combination of (4) and (5).
+        7. :const:`MATCH_SUBSTRING`
+            ``query`` is a substring of item search key (case-insensitive).
+        8. :const:`MATCH_ALLCHARS`
+            All characters in ``query`` appear in item search key in
+            the same order (case-insensitive).
+        9. :const:`MATCH_ALL`
+            Combination of all the above.
 
 
         :const:`MATCH_ALLCHARS` is considerably slower than the other
@@ -2400,7 +2436,11 @@ class Workflow(object):
         :returns: ``True`` if an update is available, else ``False``
 
         """
-        update_data = self.cached_data('__workflow_update_status', max_age=0)
+        # Create a new workflow object to ensure standard serialiser
+        # is used (update.py is called without the user's settings)
+        update_data = Workflow().cached_data('__workflow_update_status',
+                                             max_age=0)
+
         self.logger.debug('update_data : {0}'.format(update_data))
 
         if not update_data or not update_data.get('available'):
