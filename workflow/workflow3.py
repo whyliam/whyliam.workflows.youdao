@@ -33,6 +33,79 @@ import sys
 from .workflow import Workflow
 
 
+class Variables(dict):
+    """Workflow variables for Run Script actions.
+
+    .. versionadded: 1.26
+
+    This class allows you to set workflow variables from
+    Run Script actions.
+
+    It is a subclass of :class:`dict`.
+
+    >>> v = Variables(username='deanishe', password='hunter2')
+    >>> v.arg = u'output value'
+    >>> print(v)
+
+    Attributes:
+        arg (unicode): Output value (``{query}``).
+        config (dict): Configuration for downstream workflow element.
+
+    """
+
+    def __init__(self, arg=None, **variables):
+        """Create a new `Variables` object.
+
+        Args:
+            arg (unicode, optional): Main output/``{query}``.
+            **variables: Workflow variables to set.
+
+        """
+        self.arg = arg
+        self.config = {}
+        super(Variables, self).__init__(**variables)
+
+    @property
+    def obj(self):
+        """Return ``alfredworkflow`` `dict`."""
+        o = {}
+        if self:
+            d2 = {}
+            for k, v in self.items():
+                d2[k] = v
+            o['variables'] = d2
+
+        if self.config:
+            o['config'] = self.config
+
+        if self.arg is not None:
+            o['arg'] = self.arg
+
+        return {'alfredworkflow': o}
+
+    def __unicode__(self):
+        """Convert to ``alfredworkflow`` JSON object.
+
+        Returns:
+            unicode: ``alfredworkflow`` JSON object
+        """
+        if not self and not self.config:
+            if self.arg:
+                return self.arg
+            else:
+                return u''
+
+        return json.dumps(self.obj)
+
+    def __str__(self):
+        """Convert to ``alfredworkflow`` JSON object.
+
+        Returns:
+            str: UTF-8 encoded ``alfredworkflow`` JSON object
+        """
+        return unicode(self).encode('utf-8')
+
+
 class Modifier(object):
     """Modify ``Item3`` values for when specified modifier keys are pressed.
 
@@ -213,7 +286,7 @@ class Item3(object):
         Returns:
             dict: Data suitable for Alfred 3 feedback.
         """
-        # Basic values
+        # Required values
         o = {'title': self.title,
              'subtitle': self.subtitle,
              'valid': self.valid}
@@ -221,8 +294,13 @@ class Item3(object):
         icon = {}
 
         # Optional values
-        if self.arg is not None:
-            o['arg'] = self.arg
+
+        # arg & variables
+        v = Variables(self.arg, **self.variables)
+        v.config = self.config
+        arg = unicode(v)
+        if arg:
+            o['arg'] = arg
 
         if self.autocomplete is not None:
             o['autocomplete'] = self.autocomplete
@@ -244,11 +322,6 @@ class Item3(object):
         icon = self._icon()
         if icon:
             o['icon'] = icon
-
-        # Variables and config
-        js = self._vars_and_config()
-        if js:
-            o['arg'] = js
 
         # Modifiers
         mods = self._modifiers()
@@ -287,27 +360,6 @@ class Item3(object):
 
         return text
 
-    def _vars_and_config(self):
-        """Build `arg` including workflow variables and configuration.
-
-        Returns:
-            str: JSON string value for `arg` (or `None`)
-        """
-        if self.variables or self.config:
-            d = {}
-            if self.variables:
-                d['variables'] = self.variables
-
-            if self.config:
-                d['config'] = self.config
-
-            if self.arg is not None:
-                d['arg'] = self.arg
-
-            return json.dumps({'alfredworkflow': d})
-
-        return None
-
     def _modifiers(self):
         """Build `mods` dictionary for JSON feedback.
 
@@ -342,6 +394,7 @@ class Workflow3(Workflow):
         Workflow.__init__(self, **kwargs)
         self.variables = {}
         self._rerun = 0
+        self._session_id = None
 
     @property
     def _default_cachedir(self):
@@ -372,6 +425,28 @@ class Workflow3(Workflow):
             seconds (int): Interval between runs.
         """
         self._rerun = seconds
+
+    @property
+    def session_id(self):
+        """A unique session ID every time the user uses the workflow.
+
+        .. versionadded:: 1.25
+
+        The session ID persists while the user is using this workflow.
+        It expires when the user runs a different workflow or closes
+        Alfred.
+
+        """
+        if not self._session_id:
+            sid = os.getenv('_WF_SESSION_ID')
+            if not sid:
+                from uuid import uuid4
+                sid = uuid4().hex
+                self.setvar('_WF_SESSION_ID', sid)
+
+            self._session_id = sid
+
+        return self._session_id
 
     def setvar(self, name, value):
         """Set a "global" workflow variable.
@@ -420,6 +495,70 @@ class Workflow3(Workflow):
 
         self._items.append(item)
         return item
+
+    def _mk_session_name(self, name):
+        """New cache name/key based on session ID."""
+        return '_wfsess-{0}-{1}'.format(self.session_id, name)
+
+    def cache_data(self, name, data, session=False):
+        """Cache API with session-scoped expiry.
+
+        .. versionadded:: 1.25
+
+        Args:
+            name (str): Cache key
+            data (object): Data to cache
+            session (bool, optional): Whether to scope the cache
+                to the current session.
+
+        ``name`` and ``data`` are as for the
+        :meth:`~workflow.workflow.Workflow.cache_data` on
+        :class:`~workflow.workflow.Workflow`.
+
+        If ``session`` is ``True``, the ``name`` variable is prefixed
+        with :attr:`session_id`.
+
+        """
+        if session:
+            name = self._mk_session_name(name)
+
+        return super(Workflow3, self).cache_data(name, data)
+
+    def cached_data(self, name, data_func=None, max_age=60, session=False):
+        """Cache API with session-scoped expiry.
+
+        .. versionadded:: 1.25
+
+        Args:
+            name (str): Cache key
+            data_func (callable): Callable that returns fresh data. It
+                is called if the cache has expired or doesn't exist.
+            max_age (int): Maximum allowable age of cache in seconds.
+            session (bool, optional): Whether to scope the cache
+                to the current session.
+
+        ``name``, ``data_func`` and ``max_age`` are as for the
+        :meth:`~workflow.workflow.Workflow.cached_data` on
+        :class:`~workflow.workflow.Workflow`.
+
+        If ``session`` is ``True``, the ``name`` variable is prefixed
+        with :attr:`session_id`.
+
+        """
+        if session:
+            name = self._mk_session_name(name)
+
+        return super(Workflow3, self).cached_data(name, data_func, max_age)
+
+    def clear_session_cache(self):
+        """Remove *all* session data from the cache.
+
+        .. versionadded:: 1.25
+        """
+        def _is_session_file(filename):
+            return filename.startswith('_wfsess-')
+
+        self.clear_cache(_is_session_file)
 
     @property
     def obj(self):
