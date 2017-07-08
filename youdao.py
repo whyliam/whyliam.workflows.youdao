@@ -3,6 +3,7 @@
 from workflow import Workflow3, ICON_WEB, web
 
 import sys
+import hashlib, uuid
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -37,12 +38,16 @@ def set_youdao_url(query):
         youdao_keyfrom = YOUDAO_DEFAULT_KEYFROM[i]
         youdao_key = YOUDAO_DEFAULT_KEY[i]
 
+    salt = uuid.uuid4().hex
+    sign = hashlib.md5(youdao_key + query + salt + youdao_keyfrom).hexdigest()
     query = urllib.quote(str(query))
-    url = 'http://fanyi.youdao.com/openapi.do?keyfrom=' + youdao_keyfrom + \
-        '&key=' + str(youdao_key) + \
-        '&type=data&doctype=json&version=1.1&q=' + query
-    return url
 
+    url = 'http://openapi.youdao.com/api?appKey=' + str(youdao_key) + \
+        '&salt=' + str(salt) + \
+        '&sign=' + str(sign) + \
+        '&q=' + query
+
+    return url
 
 def get_web_data(query):
     # 获取翻译数据
@@ -159,22 +164,22 @@ def main(wf):
         wf.send_feedback()
 
     rt = get_web_data(query)
-
-    if rt.get("errorCode") == 500:
+    
+    if rt.get("errorCode") in (500, u'500'):
         arg = ['', '', '', '', 'error']
         arg = '$%'.join(arg)
         wf.add_item(
             title='有道翻译的API Key使用频率过高', subtitle='', arg=arg,
             valid=True, icon=ICON_ERROR)
 
-    elif rt.get("errorCode") == 50:
+    elif rt.get("errorCode") in (50, u'50'):
         arg = ['', '', '', '', 'error']
         arg = '$%'.join(arg)
         wf.add_item(
             title='有道翻译的API Key错误', subtitle='', arg=arg,
             valid=True, icon=ICON_ERROR)
 
-    elif rt.get("errorCode") == 0:
+    elif rt.get("errorCode") in (0, u'0'):
         isEnglish = check_English(query)
         get_translation(query, isEnglish, rt)
         get_phonetic(query, isEnglish, rt)
