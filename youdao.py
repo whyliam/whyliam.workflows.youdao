@@ -3,7 +3,6 @@
 from workflow import Workflow3, ICON_WEB, web
 
 import sys
-import hashlib, uuid
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -27,27 +26,48 @@ ICON_ERROR = 'icon_error.png'
 
 def set_youdao_url(query):
     # 构建有道翻译URL
-    import os
-    import random
+    import os, random
+
+    zhiyun_id = os.getenv('zhiyun_id', '')
+    zhiyun_key = os.getenv('zhiyun_key', '')
+    if zhiyun_id and zhiyun_key:
+        url = set_youdao_new_url_from(query, zhiyun_id, zhiyun_key)
+    else:
+        youdao_keyfrom = os.getenv('youdao_keyfrom', '')
+        youdao_key = os.getenv('youdao_key', '')
+        if not youdao_keyfrom or not youdao_key:
+            i = random.randrange(0, 11, 1)
+            youdao_keyfrom = YOUDAO_DEFAULT_KEYFROM[i]
+            youdao_key = YOUDAO_DEFAULT_KEY[i]
+        url = set_youdao_old_url_from(query, youdao_keyfrom, youdao_key)
+    return url
+
+
+def set_youdao_old_url_from(query, youdao_keyfrom, youdao_key):
     import urllib
 
-    youdao_keyfrom = os.getenv('youdao_keyfrom', '')
-    youdao_key = os.getenv('youdao_key', '')
-    if not youdao_keyfrom or not youdao_key:
-        i = random.randrange(0, 11, 1)
-        youdao_keyfrom = YOUDAO_DEFAULT_KEYFROM[i]
-        youdao_key = YOUDAO_DEFAULT_KEY[i]
+    query = urllib.quote(str(query))
+    url = 'http://fanyi.youdao.com/openapi.do?' + \
+        'keyfrom=' + str(youdao_keyfrom) + \
+        '&key=' + str(youdao_key) + \
+        '&type=data&doctype=json&version=1.1&q=' + query
+    return url
+
+
+def set_youdao_new_url_from(query, zhiyun_id, zhiyun_key):
+    import urllib, hashlib, uuid
 
     salt = uuid.uuid4().hex
-    sign = hashlib.md5(youdao_key + query + salt + youdao_keyfrom).hexdigest()
+    sign = hashlib.md5(zhiyun_id + query + salt + zhiyun_key).hexdigest()
     query = urllib.quote(str(query))
 
-    url = 'http://openapi.youdao.com/api?appKey=' + str(youdao_key) + \
+    url = 'http://openapi.youdao.com/api?appKey=' + str(zhiyun_id) + \
         '&salt=' + str(salt) + \
         '&sign=' + str(sign) + \
         '&q=' + query
 
     return url
+
 
 def get_web_data(query):
     # 获取翻译数据
@@ -164,12 +184,26 @@ def main(wf):
         wf.send_feedback()
 
     rt = get_web_data(query)
-    
+
     if rt.get("errorCode") in (500, u'500'):
         arg = ['', '', '', '', 'error']
         arg = '$%'.join(arg)
         wf.add_item(
             title='有道翻译的API Key使用频率过高', subtitle='', arg=arg,
+            valid=True, icon=ICON_ERROR)
+
+    elif rt.get("errorCode") in (108, u'108'):
+        arg = ['', '', '', '', 'error']
+        arg = '$%'.join(arg)
+        wf.add_item(
+            title='appID 或者 appKey 无效', subtitle='', arg=arg,
+            valid=True, icon=ICON_ERROR)
+
+    elif rt.get("errorCode") in (111, u'111', 401, u'401'):
+        arg = ['', '', '', '', 'error']
+        arg = '$%'.join(arg)
+        wf.add_item(
+            title='账号为欠费状态', subtitle='', arg=arg,
             valid=True, icon=ICON_ERROR)
 
     elif rt.get("errorCode") in (50, u'50'):
