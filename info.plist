@@ -324,7 +324,7 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>有道翻译 Workflow v2.0.1
+	<string>有道翻译 Workflow v2.1.0
 
 默认快捷键 yd, 查看翻译结果。
 
@@ -415,17 +415,23 @@
 	<key>variables</key>
 	<dict>
 		<key>youdao_key</key>
-		<string>1947745091</string>
+		<string></string>
 		<key>youdao_keyfrom</key>
-		<string>whyliam-wf-12</string>
+		<string></string>
+		<key>zhiyun_id</key>
+		<string></string>
+		<key>zhiyun_key</key>
+		<string></string>
 	</dict>
 	<key>variablesdontexport</key>
 	<array>
 		<string>youdao_keyfrom</string>
 		<string>youdao_key</string>
+		<string>zhiyun_id</string>
+		<string>zhiyun_key</string>
 	</array>
 	<key>version</key>
-	<string>2.0.0</string>
+	<string>2.1.0</string>
 	<key>webaddress</key>
 	<string>https://github.com/liszd/whyliam.workflows.youdao</string>
 </dict>

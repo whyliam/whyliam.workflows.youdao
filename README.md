@@ -1,6 +1,6 @@
 # whyliam.workflows.youdao
 
-## 有道翻译 workflow v2.0.1
+## 有道翻译 workflow v2.1.0
 
 默认快捷键 `yd`，查看翻译结果。
 
@@ -20,15 +20,29 @@
 
 ### 下载
 
-[点击下载](https://github.com/liszd/whyliam.workflows.youdao/releases/download/2.0.1/whyliam.workflows.youdao.alfredworkflow)
+[点击下载](https://github.com/liszd/whyliam.workflows.youdao/releases/download/2.1.0/whyliam.workflows.youdao.alfredworkflow)
 
 ### 安装
 
-1. [下载](https://github.com/liszd/whyliam.workflows.youdao/releases)最新版本双击安装
-2. [注册](http://fanyi.youdao.com/openapi?path=data-mode)有道翻译API
-3. 在Alfred的设置中填入对应的`Key`和`Keyfrom`
+1\. [下载](https://github.com/liszd/whyliam.workflows.youdao/releases)最新版本双击安装
+
+**老版本有道**
+
+2\. [注册](http://fanyi.youdao.com/openapi?path=data-mode)有道翻译API
+
+3\. 在Alfred的设置中填入对应的`Key`和`Keyfrom`
+
 ![](http://ww2.sinaimg.cn/large/006tNbRwgy1feno2vevklj31a30os0u5.jpg)
-4. 在Alfred的设置中设置快捷方式键
+
+**新版本有道智云**
+
+2\. [注册](http://ai.youdao.com/appmgr.s)有道智云应用
+
+3\. 在Alfred的设置中填入对应的`应用ID`和`应用密钥`
+
+![](https://ws2.sinaimg.cn/large/006tKfTcgy1fiosfttuejj31kw0vb493.jpg)
+
+4\. 在Alfred的设置中设置快捷方式键
 ![](http://ww2.sinaimg.cn/large/006tNbRwgy1feno6pzaxdj31a60p0jsl.jpg)
 
 ### 演示
