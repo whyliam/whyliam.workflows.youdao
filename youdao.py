@@ -16,6 +16,24 @@ YOUDAO_DEFAULT_KEY = (2002493135, 2002493136, 2002493137,
                       2002493141, 2002493142, 2002493143,
                       1947745089, 1947745090)
 
+ERRORCODE_DICT = {
+    "50": "有道翻译的API Key错误",
+    "101": "缺少必填的参数，出现这个情况还可能是et的值和实际加密方式不对应",
+    "102": "不支持的语言类型", "103": "翻译文本过长",
+    "104": "不支持的API类型", "105": "不支持的签名类型",
+    "106": "不支持的响应类型", "107": "不支持的传输加密类型",
+    "108": "appKey无效（ 注意不是应用密钥）",
+    "109": "batchLog格式不正确",
+    "110": "无相关服务的有效实例",
+    "111": "开发者账号无效，可能是账号为欠费状态",
+    "201": "解密失败，可能为DES,BASE64,URLDecode的错误",
+    "202": "签名检验失败", "203": "访问IP地址不在可访问IP列表",
+    "301": "辞典查询失败", "302": "翻译查询失败",
+    "303": "服务端的其它异常",
+    "401": "账户已经欠费停",
+    "500": "有道翻译的API Key使用频率过高"
+}
+
 ICON_DEFAULT = 'icon.png'
 ICON_PHONETIC = 'icon_phonetic.png'
 ICON_BASIC = 'icon_basic.png'
@@ -26,15 +44,16 @@ ICON_ERROR = 'icon_error.png'
 
 def set_youdao_url(query):
     # 构建有道翻译URL
-    import os, random
+    import os
+    import random
 
-    zhiyun_id = os.getenv('zhiyun_id', '')
-    zhiyun_key = os.getenv('zhiyun_key', '')
+    zhiyun_id = os.getenv('zhiyun_id', '').strip()
+    zhiyun_key = os.getenv('zhiyun_key', '').strip()
     if zhiyun_id and zhiyun_key:
         url = set_youdao_new_url_from(query, zhiyun_id, zhiyun_key)
     else:
-        youdao_keyfrom = os.getenv('youdao_keyfrom', '')
-        youdao_key = os.getenv('youdao_key', '')
+        youdao_keyfrom = os.getenv('youdao_keyfrom', '').strip()
+        youdao_key = os.getenv('youdao_key', '').strip()
         if not youdao_keyfrom or not youdao_key:
             i = random.randrange(0, 11, 1)
             youdao_keyfrom = YOUDAO_DEFAULT_KEYFROM[i]
@@ -55,7 +74,9 @@ def set_youdao_old_url_from(query, youdao_keyfrom, youdao_key):
 
 
 def set_youdao_new_url_from(query, zhiyun_id, zhiyun_key):
-    import urllib, hashlib, uuid
+    import urllib
+    import hashlib
+    import uuid
 
     salt = uuid.uuid4().hex
     sign = hashlib.md5(zhiyun_id + query + salt + zhiyun_key).hexdigest()
@@ -77,11 +98,11 @@ def get_web_data(query):
         return rt
     except:
         rt = {}
-        rt['errorCode'] = 500
+        rt['errorCode'] = "500"
         return rt
     else:
         rt = {}
-        rt['errorCode'] = 500
+        rt['errorCode'] = "500"
         return rt
 
 
@@ -184,36 +205,17 @@ def main(wf):
         wf.send_feedback()
 
     rt = get_web_data(query)
+    errorCode = str(rt.get("errorCode"))
 
-    if rt.get("errorCode") in (500, u'500'):
+    if ERRORCODE_DICT.has_key(errorCode):
         arg = ['', '', '', '', 'error']
         arg = '$%'.join(arg)
         wf.add_item(
-            title='有道翻译的API Key使用频率过高', subtitle='', arg=arg,
+            title=errorCode+" "+ERRORCODE_DICT[errorCode],
+            subtitle='', arg=arg,
             valid=True, icon=ICON_ERROR)
 
-    elif rt.get("errorCode") in (108, u'108'):
-        arg = ['', '', '', '', 'error']
-        arg = '$%'.join(arg)
-        wf.add_item(
-            title='appID 或者 appKey 无效', subtitle='', arg=arg,
-            valid=True, icon=ICON_ERROR)
-
-    elif rt.get("errorCode") in (111, u'111', 401, u'401'):
-        arg = ['', '', '', '', 'error']
-        arg = '$%'.join(arg)
-        wf.add_item(
-            title='账号为欠费状态', subtitle='', arg=arg,
-            valid=True, icon=ICON_ERROR)
-
-    elif rt.get("errorCode") in (50, u'50'):
-        arg = ['', '', '', '', 'error']
-        arg = '$%'.join(arg)
-        wf.add_item(
-            title='有道翻译的API Key错误', subtitle='', arg=arg,
-            valid=True, icon=ICON_ERROR)
-
-    elif rt.get("errorCode") in (0, u'0'):
+    elif errorCode == "0":
         isEnglish = check_English(query)
         get_translation(query, isEnglish, rt)
         get_phonetic(query, isEnglish, rt)
