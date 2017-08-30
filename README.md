@@ -1,6 +1,6 @@
 # whyliam.workflows.youdao
 
-## 有道翻译 workflow v2.1.0
+## 有道翻译 workflow v2.1.1
 
 默认快捷键 `yd`，查看翻译结果。
 
@@ -20,7 +20,7 @@
 
 ### 下载
 
-[点击下载](https://github.com/liszd/whyliam.workflows.youdao/releases/download/2.1.0/whyliam.workflows.youdao.alfredworkflow)
+[点击下载](https://github.com/liszd/whyliam.workflows.youdao/releases/download/2.1.1/whyliam.workflows.youdao.alfredworkflow)
 
 ### 安装
 
@@ -34,7 +34,7 @@
 
 ![](http://ww2.sinaimg.cn/large/006tNbRwgy1feno2vevklj31a30os0u5.jpg)
 
-**新版本有道智云**
+**或者 新版本有道智云**
 
 2\. [注册](http://ai.youdao.com/appmgr.s)有道智云应用
 
@@ -44,6 +44,10 @@
 
 4\. 在Alfred的设置中设置快捷方式键
 ![](http://ww2.sinaimg.cn/large/006tNbRwgy1feno6pzaxdj31a60p0jsl.jpg)
+
+### 问题
+
+如果新版本有道智云遇到问题，请参见![错误代码列表](http://ai.youdao.com/docs/api.s#id6)。
 
 ### 演示
 
