@@ -21,6 +21,8 @@
 				<false/>
 			</dict>
 		</array>
+		<key>5751065C-52C1-4D19-8F7D-03B730BFE440</key>
+		<array/>
 		<key>7C1ABC41-3B36-401F-96C7-30BCB39181FF</key>
 		<array>
 			<dict>
@@ -171,6 +173,8 @@
 			<dict>
 				<key>alfredfiltersresults</key>
 				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
 				<key>argumenttrimmode</key>
 				<integer>0</integer>
 				<key>argumenttype</key>
@@ -254,39 +258,6 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>action</key>
-				<integer>1</integer>
-				<key>argument</key>
-				<integer>1</integer>
-				<key>argumenttext</key>
-				<string>yd </string>
-				<key>focusedappvariable</key>
-				<false/>
-				<key>focusedappvariablename</key>
-				<string></string>
-				<key>hotkey</key>
-				<integer>-1</integer>
-				<key>hotmod</key>
-				<integer>524288</integer>
-				<key>hotstring</key>
-				<string>double tap</string>
-				<key>leftcursor</key>
-				<false/>
-				<key>modsmode</key>
-				<integer>0</integer>
-				<key>relatedAppsMode</key>
-				<integer>0</integer>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.trigger.hotkey</string>
-			<key>uid</key>
-			<string>5751065C-52C1-4D19-8F7D-03B730BFE440</string>
-			<key>version</key>
-			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -324,9 +295,42 @@
 			<key>version</key>
 			<integer>2</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>action</key>
+				<integer>1</integer>
+				<key>argument</key>
+				<integer>1</integer>
+				<key>argumenttext</key>
+				<string>yd </string>
+				<key>focusedappvariable</key>
+				<false/>
+				<key>focusedappvariablename</key>
+				<string></string>
+				<key>hotkey</key>
+				<integer>0</integer>
+				<key>hotmod</key>
+				<integer>0</integer>
+				<key>hotstring</key>
+				<string></string>
+				<key>leftcursor</key>
+				<false/>
+				<key>modsmode</key>
+				<integer>0</integer>
+				<key>relatedAppsMode</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.hotkey</string>
+			<key>uid</key>
+			<string>5751065C-52C1-4D19-8F7D-03B730BFE440</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
 	</array>
 	<key>readme</key>
-	<string>有道翻译 Workflow v2.1.1
+	<string>有道翻译 Workflow v2.1.2
 
 默认快捷键 yd, 查看翻译结果。
 
@@ -335,6 +339,7 @@
 3. 翻译短语句子
 4. 打开有道翻译页面，查看详细内容
 5. 直接在打出翻译结果
+6. 显示历史查询记录
 
 功能
 
@@ -343,6 +348,7 @@
 3. 按`Comman+回车`直接在打出翻译结果
 4. 按`Shift+回车`直接发音
 5. 选中文字 双击`Command`进行翻译
+6. `yd *` 显示历史查询记录
 
 更多
 参见 https://blog.naaln.com/2017/04/alfred-youdao-intro/</string>
@@ -376,7 +382,7 @@
 			<key>xpos</key>
 			<integer>270</integer>
 			<key>ypos</key>
-			<integer>430</integer>
+			<integer>440</integer>
 		</dict>
 		<key>6A03FDC5-89AC-4F9D-9456-3762ACA751FE</key>
 		<dict>
@@ -433,7 +439,7 @@
 		<string>zhiyun_key</string>
 	</array>
 	<key>version</key>
-	<string>2.1.1</string>
+	<string>2.1.2</string>
 	<key>webaddress</key>
 	<string>https://github.com/liszd/whyliam.workflows.youdao</string>
 </dict>

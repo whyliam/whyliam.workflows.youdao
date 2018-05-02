@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from workflow import Workflow3, ICON_WEB, web
-
+import json
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -17,21 +17,29 @@ YOUDAO_DEFAULT_KEY = (2002493135, 2002493136, 2002493137,
                       1947745089, 1947745090)
 
 ERRORCODE_DICT = {
-    "50": "有道翻译的API Key错误",
     "101": "缺少必填的参数，出现这个情况还可能是et的值和实际加密方式不对应",
-    "102": "不支持的语言类型", "103": "翻译文本过长",
-    "104": "不支持的API类型", "105": "不支持的签名类型",
-    "106": "不支持的响应类型", "107": "不支持的传输加密类型",
-    "108": "appKey无效（ 注意不是应用密钥）",
+    "102": "不支持的语言类型",
+    "103": "翻译文本过长",
+    "104": "不支持的API类型",
+    "105": "不支持的签名类型",
+    "106": "不支持的响应类型",
+    "107": "不支持的传输加密类型",
+    "108": "appKey无效，注意不是应用密钥",
     "109": "batchLog格式不正确",
     "110": "无相关服务的有效实例",
-    "111": "开发者账号无效，可能是账号为欠费状态",
+    "111": "开发者账号无效",
+    "113": "q不能为空",
     "201": "解密失败，可能为DES,BASE64,URLDecode的错误",
-    "202": "签名检验失败", "203": "访问IP地址不在可访问IP列表",
-    "301": "辞典查询失败", "302": "翻译查询失败",
+    "202": "签名检验失败",
+    "203": "访问IP地址不在可访问IP列表",
+    "205": "请求的接口与应用的平台类型不一致",
+    "301": "辞典查询失败",
+    "302": "翻译查询失败",
     "303": "服务端的其它异常",
-    "401": "账户已经欠费停",
-    "500": "有道翻译的API Key使用频率过高"
+    "401": "账户已经欠费",
+    "411": "访问频率受限,请稍后访问",
+    "412": "长请求过于频繁，请稍后访问",
+    "500": "有道翻译失败"
 }
 
 ICON_DEFAULT = 'icon.png'
@@ -82,11 +90,11 @@ def set_youdao_new_url_from(query, zhiyun_id, zhiyun_key):
     sign = hashlib.md5(zhiyun_id + query + salt + zhiyun_key).hexdigest()
     query = urllib.quote(str(query))
 
-    url = 'http://openapi.youdao.com/api?appKey=' + str(zhiyun_id) + \
+    url = 'https://openapi.youdao.com/api' + \
+        '?appKey=' + str(zhiyun_id) + \
         '&salt=' + str(salt) + \
         '&sign=' + str(sign) + \
         '&q=' + query
-
     return url
 
 
@@ -106,6 +114,22 @@ def get_web_data(query):
         return rt
 
 
+def save_history_data(query, title, arg, ICON_DEFAULT):
+    jsonData = '{"title": "%s", "subtitle": "%s", "arg": "%s", \
+        "icon": "%s"}\n' % (query, title, arg, ICON_DEFAULT)
+    with open('history.log', 'a') as file:
+        file.write(jsonData)
+
+
+def get_history_data():
+    with open('history.log', 'r') as file:
+        for line in file.readlines()[-1:-10:-1]:
+            line = json.loads(line)
+            wf.add_item(
+                title=line['title'], subtitle=line['subtitle'],
+                arg=line['arg'], valid=True, icon=line['icon'])
+
+
 def check_Update():
     # 检查更新
     if wf.update_available:
@@ -119,7 +143,7 @@ def check_Update():
 
 
 def check_English(query):
-    # 检查英文翻译中午
+    # 检查英文翻译中文
     import re
 
     if re.search(ur"[\u4e00-\u9fa5]+", query):
@@ -135,7 +159,9 @@ def get_translation(query, isEnglish, rt):
         arg = [query, title, query, '', ''] if isEnglish else [
             query, title, title, '', '']
         arg = '$%'.join(arg)
-        # print arg
+
+        save_history_data(query, title, arg, ICON_DEFAULT)
+
         wf.add_item(
             title=title, subtitle=subtitle, arg=arg,
             valid=True, icon=ICON_DEFAULT)
@@ -204,34 +230,38 @@ def main(wf):
         check_Update()
         wf.send_feedback()
 
-    rt = get_web_data(query)
-    errorCode = str(rt.get("errorCode"))
-
-    if ERRORCODE_DICT.has_key(errorCode):
-        arg = ['', '', '', '', 'error']
-        arg = '$%'.join(arg)
-        wf.add_item(
-            title=errorCode+" "+ERRORCODE_DICT[errorCode],
-            subtitle='', arg=arg,
-            valid=True, icon=ICON_ERROR)
-
-    elif errorCode == "0":
-        isEnglish = check_English(query)
-        get_translation(query, isEnglish, rt)
-        get_phonetic(query, isEnglish, rt)
-        get_explains(query, isEnglish, rt)
-        get_web_translation(query, isEnglish, rt)
-
+    if query == "*":
+        get_history_data()
     else:
-        title = '有道也翻译不出来了'
-        subtitle = '尝试一下去网站搜索'
-        arg = [query, ' ', ' ', ' ']
-        arg = '$%'.join(arg)
-        wf.add_item(
-            title=title, subtitle=subtitle, arg=arg,
-            valid=True, icon=ICON_DEFAULT)
+        rt = get_web_data(query)
+        errorCode = str(rt.get("errorCode"))
+
+        if ERRORCODE_DICT.has_key(errorCode):
+            arg = ['', '', '', '', 'error']
+            arg = '$%'.join(arg)
+            wf.add_item(
+                title=errorCode+" "+ERRORCODE_DICT[errorCode],
+                subtitle='', arg=arg,
+                valid=True, icon=ICON_ERROR)
+
+        elif errorCode == "0":
+            isEnglish = check_English(query)
+            get_translation(query, isEnglish, rt)
+            get_phonetic(query, isEnglish, rt)
+            get_explains(query, isEnglish, rt)
+            get_web_translation(query, isEnglish, rt)
+
+        else:
+            title = '有道也翻译不出来了'
+            subtitle = '尝试一下去网站搜索'
+            arg = [query, ' ', ' ', ' ']
+            arg = '$%'.join(arg)
+            wf.add_item(
+                title=title, subtitle=subtitle, arg=arg,
+                valid=True, icon=ICON_DEFAULT)
 
     wf.send_feedback()
+
 
 if __name__ == '__main__':
     wf = Workflow3(update_settings={
