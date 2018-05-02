@@ -1,6 +1,6 @@
 # whyliam.workflows.youdao
 
-## 有道翻译 workflow v2.1.1
+## 有道翻译 workflow v2.1.2
 
 默认快捷键 `yd`，查看翻译结果。
 
@@ -9,6 +9,7 @@
 3. 翻译短语句子
 4. 打开有道翻译页面，查看详细内容
 5. 直接在打出翻译结果
+6. 显示历史查询记录
 
 ### 功能
 
@@ -17,10 +18,11 @@
 3. 按`Command ⌘+回车` 直接在打出翻译结果
 4. 按`Shift ⇧+回车` 直接发音
 5. 选中文字 双击`Option ⌥`进行翻译（需要另行设置）
+6. `yd *` 显示历史查询记录
 
 ### 下载
 
-[点击下载](https://github.com/liszd/whyliam.workflows.youdao/releases/download/2.1.1/whyliam.workflows.youdao.alfredworkflow)
+[点击下载](https://github.com/liszd/whyliam.workflows.youdao/releases/download/2.1.2/whyliam.workflows.youdao.alfredworkflow)
 
 ### 安装
 
@@ -47,7 +49,7 @@
 
 ### 问题
 
-如果新版本有道智云遇到问题，请参见 [错误代码列表](http://ai.youdao.com/docs/api.s#id6)。
+如果新版本有道智云遇到问题，请参见 [错误代码列表](http://ai.youdao.com/docs/doc-trans-api.s#p06)。
 
 ### 演示
 
