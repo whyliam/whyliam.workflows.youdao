@@ -259,7 +259,6 @@ def main(wf):
             wf.add_item(
                 title=title, subtitle=subtitle, arg=arg,
                 valid=True, icon=ICON_DEFAULT)
-
     wf.send_feedback()
 
 
