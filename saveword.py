@@ -50,7 +50,7 @@ class SaveWord(object):
 
     def loginToYoudao(self):
         self.cj.clear()
-        first_page = self.opener.open('http://account.youdao.com/login?back_url=http://dict.youdao.com&service=dict')
+        first_page = self.opener.open('https://account.youdao.com/login?back_url=http://dict.youdao.com&service=dict')
         login_data = urllib.urlencode({
             'app'  : 'web',
             'tp'  : 'urstoken',
@@ -65,9 +65,12 @@ class SaveWord(object):
             'savelogin' : '1',
         })
         response = self.opener.open('https://logindict.youdao.com/login/acc/login', login_data)
-        if response.headers.get('Set-Cookie').find(self.username) > -1:
-            self.cj.save(cookie_filename, ignore_discard=True, ignore_expires=True)
-            return True
+        if response.headers.get('Set-Cookie') != None:
+            if response.headers.get('Set-Cookie').find(self.username) > -1:
+                self.cj.save(cookie_filename, ignore_discard=True, ignore_expires=True)
+                return True
+            else:
+                return False
         else:
             return False
 
@@ -115,17 +118,21 @@ class SaveWord(object):
 
     def save(self, wf):
         if self.syncToYoudao() or (self.loginToYoudao() and self.syncToYoudao()):
-            wf.logger.debug('已成功保存至线上单词本')
+            sys.stdout.write('成功保存至线上单词本')
         else:
             result = self.saveLocal()
-            wf.logger.debug(result if result else '帐号出错，已临时保存至本地单词本')
+            sys.stdout.write('帐号出错，临时保存至本地单词本')
 
 if __name__ == '__main__':
     params = sys.argv[1].split('$%')
 
-    username = sys.argv[ sys.argv.index('-username') + 1] if '-username' in sys.argv else None
-    password = sys.argv[ sys.argv.index('-password') + 1] if '-password' in sys.argv else None
-    filepath = sys.argv[ sys.argv.index('-filepath') + 1] if '-filepath' in sys.argv else os.path.join(os.environ['HOME'] , 'Documents/Alfred-youdao-wordbook.xml')
+    username = os.getenv('username', '').strip()
+    password = os.getenv('password', '').strip()
+    filepath = os.getenv('filepath', '').strip()
+    if filepath is None:
+        filepath = os.path.join(os.environ['HOME'] , 'Documents/Alfred-youdao-wordbook.xml')
+    else:
+        filepath = os.path.expanduser(filepath)
 
     m2 = hashlib.md5()
     m2.update(password)
@@ -139,6 +146,6 @@ if __name__ == '__main__':
     }
 
     saver = SaveWord(username, password_md5 , filepath, item)
-    wf = Workflow3()
 
+    wf = Workflow3()
     sys.exit(wf.run(saver.save))

@@ -4,8 +4,6 @@
 <dict>
 	<key>bundleid</key>
 	<string>whyliam.workflows.youdao</string>
-	<key>category</key>
-	<string>Tools</string>
 	<key>connections</key>
 	<dict>
 		<key>27E60581-8105-41DD-8E29-4FE811179098</key>
@@ -331,12 +329,6 @@
 				<false/>
 				<key>focusedappvariablename</key>
 				<string></string>
-				<key>hotkey</key>
-				<integer>0</integer>
-				<key>hotmod</key>
-				<integer>0</integer>
-				<key>hotstring</key>
-				<string></string>
 				<key>leftcursor</key>
 				<false/>
 				<key>modsmode</key>
@@ -359,7 +351,7 @@
 				<key>escaping</key>
 				<integer>38</integer>
 				<key>script</key>
-				<string>/usr/bin/python saveword.py "{query}" "us" -username yourname -password yoursecret</string>
+				<string>/usr/bin/python saveword.py "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -503,6 +495,12 @@
 	</dict>
 	<key>variables</key>
 	<dict>
+		<key>filepath</key>
+		<string>~/Documents/Alfred-youdao-wordbook.xml</string>
+		<key>password</key>
+		<string></string>
+		<key>username</key>
+		<string></string>
 		<key>youdao_key</key>
 		<string></string>
 		<key>youdao_keyfrom</key>
@@ -514,8 +512,10 @@
 	</dict>
 	<key>variablesdontexport</key>
 	<array>
-		<string>youdao_keyfrom</string>
 		<string>youdao_key</string>
+		<string>username</string>
+		<string>password</string>
+		<string>youdao_keyfrom</string>
 		<string>zhiyun_id</string>
 		<string>zhiyun_key</string>
 	</array>
