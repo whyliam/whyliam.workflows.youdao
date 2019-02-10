@@ -397,7 +397,7 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>有道翻译 Workflow v2.2.0
+	<string>有道翻译 Workflow v2.2.1
 
 默认快捷键 yd, 查看翻译结果。
 
@@ -520,7 +520,7 @@
 		<string>zhiyun_key</string>
 	</array>
 	<key>version</key>
-	<string>2.2.0</string>
+	<string>2.2.1</string>
 	<key>webaddress</key>
 	<string>https://github.com/liszd/whyliam.workflows.youdao</string>
 </dict>

@@ -23,7 +23,7 @@ def getargs(wf):
         # 查询的单词
         sys.stdout.write(query[0].strip())
     elif part == 1:
-        # 翻过的结果
+        # 翻译的结果
         sys.stdout.write(query[1].strip())
     elif part == 2:
         # 发音

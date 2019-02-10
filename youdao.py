@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from workflow import Workflow3, ICON_WEB, web
+from workflow import Workflow3, web
 import json
+import uuid
+import hashlib
+import time
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -50,7 +53,7 @@ ICON_UPDATE = 'icon_update.png'
 ICON_ERROR = 'icon_error.png'
 
 
-def set_youdao_url(query):
+def get_youdao_url(query):
     # 构建有道翻译URL
     import os
     import random
@@ -58,7 +61,7 @@ def set_youdao_url(query):
     zhiyun_id = os.getenv('zhiyun_id', '').strip()
     zhiyun_key = os.getenv('zhiyun_key', '').strip()
     if zhiyun_id and zhiyun_key:
-        url = set_youdao_new_url_from(query, zhiyun_id, zhiyun_key)
+        url = get_youdao_new_url(query, zhiyun_id, zhiyun_key)
     else:
         youdao_keyfrom = os.getenv('youdao_keyfrom', '').strip()
         youdao_key = os.getenv('youdao_key', '').strip()
@@ -66,11 +69,11 @@ def set_youdao_url(query):
             i = random.randrange(0, 11, 1)
             youdao_keyfrom = YOUDAO_DEFAULT_KEYFROM[i]
             youdao_key = YOUDAO_DEFAULT_KEY[i]
-        url = set_youdao_old_url_from(query, youdao_keyfrom, youdao_key)
+        url = get_youdao_old_url(query, youdao_keyfrom, youdao_key)
     return url
 
 
-def set_youdao_old_url_from(query, youdao_keyfrom, youdao_key):
+def get_youdao_old_url(query, youdao_keyfrom, youdao_key):
     import urllib
 
     query = urllib.quote(str(query))
@@ -81,26 +84,45 @@ def set_youdao_old_url_from(query, youdao_keyfrom, youdao_key):
     return url
 
 
-def set_youdao_new_url_from(query, zhiyun_id, zhiyun_key):
+def encrypt(signStr):
+    hash_algorithm = hashlib.sha256()
+    hash_algorithm.update(signStr.encode('utf-8'))
+    return hash_algorithm.hexdigest()
+
+
+def truncate(q):
+    if q is None:
+        return None
+    size = len(q)
+    return q if size <= 20 else q[0:10] + str(size) + q[size - 10:size]
+
+
+def get_youdao_new_url(query, zhiyun_id, zhiyun_key):
     import urllib
     import hashlib
     import uuid
 
-    salt = uuid.uuid4().hex
-    sign = hashlib.md5(zhiyun_id + query + salt + zhiyun_key).hexdigest()
-    query = urllib.quote(str(query))
+    query = str(query)
+    curtime = str(int(time.time()))
+    salt = str(uuid.uuid1())
+    signStr = zhiyun_id + truncate(query) + salt + curtime + zhiyun_key
+    sign = encrypt(signStr)
 
     url = 'https://openapi.youdao.com/api' + \
         '?appKey=' + str(zhiyun_id) + \
         '&salt=' + str(salt) + \
         '&sign=' + str(sign) + \
-        '&q=' + query
+        '&q=' + urllib.quote(query) + \
+        '&from=auto' + \
+        '&to=auto' + \
+        '&signType=v3' + \
+        '&curtime=' + curtime
     return url
 
 
-def get_web_data(query):
+def fetch_translation(query):
     # 获取翻译数据
-    url = set_youdao_url(query)
+    url = get_youdao_url(query)
     try:
         rt = web.get(url).json()
         return rt
@@ -133,6 +155,7 @@ def get_history_data():
 def check_Update():
     # 检查更新
     if wf.update_available:
+        workflow.update.install_update()
         arg = ['', '', '', '', 'error']
         arg = '$%'.join(arg)
         wf.add_item(
@@ -142,7 +165,7 @@ def check_Update():
         wf.add_item('有道翻译')
 
 
-def check_English(query):
+def is_English(query):
     # 检查英文翻译中文
     import re
 
@@ -170,59 +193,62 @@ def get_translation(query, isEnglish, rt):
 def get_phonetic(query, isEnglish, rt):
     # 发音
     if u'basic' in rt.keys():
-        if rt["basic"].get("phonetic"):
-            title = ""
-            if rt["basic"].get("us-phonetic"):
-                title += ("[美: " + rt["basic"]["us-phonetic"] + "] ")
-            if rt["basic"].get("uk-phonetic"):
-                title += ("[英: " + rt["basic"]["uk-phonetic"] + "] ")
-            title = title if title else "[" + rt["basic"]["phonetic"] + "]"
-            subtitle = '有道发音'
-            arg = [query, title, query, '', ''] if isEnglish else [
-                query, title, '', query, '']
-            arg = '$%'.join(arg)
-            wf.add_item(
-                title=title, subtitle=subtitle, arg=arg,
-                valid=True, icon=ICON_PHONETIC)
+        if rt["basic"] != None:
+            if rt["basic"].get("phonetic"):
+                title = ""
+                if rt["basic"].get("us-phonetic"):
+                    title += ("[美: " + rt["basic"]["us-phonetic"] + "] ")
+                if rt["basic"].get("uk-phonetic"):
+                    title += ("[英: " + rt["basic"]["uk-phonetic"] + "] ")
+                title = title if title else "[" + rt["basic"]["phonetic"] + "]"
+                subtitle = '有道发音'
+                arg = [query, title, query, '', ''] if isEnglish else [
+                    query, title, '', query, '']
+                arg = '$%'.join(arg)
+                wf.add_item(
+                    title=title, subtitle=subtitle, arg=arg,
+                    valid=True, icon=ICON_PHONETIC)
 
 
 def get_explains(query, isEnglish, rt):
     # 简明释意
     if u'basic' in rt.keys():
-        for i in range(len(rt["basic"]["explains"])):
-            title = rt["basic"]["explains"][i]
-            subtitle = '简明释意'
-            arg = [query, title, query, '', ''] if isEnglish else [
-                query, title, '', title, '']
-            arg = '$%'.join(arg)
-            wf.add_item(
-                title=title, subtitle=subtitle, arg=arg,
-                valid=True, icon=ICON_PHONETIC)
+        if rt["basic"] != None:
+            for i in range(len(rt["basic"]["explains"])):
+                title = rt["basic"]["explains"][i]
+                subtitle = '简明释意'
+                arg = [query, title, query, '', ''] if isEnglish else [
+                    query, title, '', title, '']
+                arg = '$%'.join(arg)
+                wf.add_item(
+                    title=title, subtitle=subtitle, arg=arg,
+                    valid=True, icon=ICON_PHONETIC)
 
 
 def get_web_translation(query, isEnglish, rt):
   # 网络翻译
     if u'web' in rt.keys():
-        for i in range(len(rt["web"])):
-            titles = rt["web"][i]["value"]
-            for title in titles:
-                subtitle = '网络翻译: ' + rt["web"][i]["key"]
+        if rt["web"] != None:
+            for i in range(len(rt["web"])):
+                titles = rt["web"][i]["value"]
+                for title in titles:
+                    subtitle = '网络翻译: ' + rt["web"][i]["key"]
 
-                if isEnglish:
-                    key = ''.join(rt["web"][i]["key"])
-                    arg = [query, title, key, '', '']
-                else:
-                    value = ' '.join(rt["web"][i]["value"])
-                    arg = [query, title, title, '', '']
+                    if isEnglish:
+                        key = ''.join(rt["web"][i]["key"])
+                        arg = [query, title, key, '', '']
+                    else:
+                        value = ' '.join(rt["web"][i]["value"])
+                        arg = [query, title, title, '', '']
 
-                arg = '$%'.join(arg)
-                wf.add_item(
-                    title=title, subtitle=subtitle,
-                    arg=arg, valid=True, icon=ICON_WEB)
+                    arg = '$%'.join(arg)
+                    wf.add_item(
+                        title=title, subtitle=subtitle,
+                        arg=arg, valid=True, icon=ICON_WEB)
 
 
 def main(wf):
-    query = wf.args[0].strip().replace("\\", "")
+    query = wf.args[0].strip()
     if not isinstance(query, unicode):
         query = query.decode('utf8')
 
@@ -233,7 +259,7 @@ def main(wf):
     if query == "*":
         get_history_data()
     else:
-        rt = get_web_data(query)
+        rt = fetch_translation(query)
         errorCode = str(rt.get("errorCode"))
 
         if ERRORCODE_DICT.has_key(errorCode):
@@ -245,7 +271,7 @@ def main(wf):
                 valid=True, icon=ICON_ERROR)
 
         elif errorCode == "0":
-            isEnglish = check_English(query)
+            isEnglish = is_English(query)
             get_translation(query, isEnglish, rt)
             get_phonetic(query, isEnglish, rt)
             get_explains(query, isEnglish, rt)

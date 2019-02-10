@@ -115,11 +115,10 @@ class SaveWord(object):
 
     def save(self, wf):
         if self.syncToYoudao() or (self.loginToYoudao() and self.syncToYoudao()):
-            print '已成功保存至线上单词本'
+            wf.logger.debug('已成功保存至线上单词本')
         else:
             result = self.saveLocal()
-            print result if result else '帐号出错，已临时保存至本地单词本'
-
+            wf.logger.debug(result if result else '帐号出错，已临时保存至本地单词本')
 
 if __name__ == '__main__':
     params = sys.argv[1].split('$%')
