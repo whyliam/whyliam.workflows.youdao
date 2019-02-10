@@ -51,7 +51,7 @@
 
 ### 问题
 
-如果新版本有道智云遇到问题，请参见 [错误代码列表](http://ai.youdao.com/docs/doc-trans-api.s#p06)。
+如果新版本有道智云遇到问题，请参见 [错误代码列表](http://ai.youdao.com/docs/doc-trans-api.s#p08)。
 
 ### 演示
 
@@ -85,9 +85,13 @@
 
 #### 同步单词到有道在线单词本 - `Alt+回车`
 
-![](http://oqhtscus0.bkt.clouddn.com/4ed0a90dcfbdb62ba614b9d18bc320d7.jpg)
+![](https://ws4.sinaimg.cn/large/006tNc79ly1g01esa4p4bj31ig0u0atl.jpg)
 
-在 `yourname`、`yoursecret` 处分别填写网易云邮箱和密码，接着按 `Alt+回车` 就能将词库存进网易有道词典的单词本。
+分别在`username`, `password`中输入有道的用户名和密码。
+
+在`filepath`中输入有道单词本离线保存的位置，默认在`~/Documents`中。
+
+查询单词后按 `Alt+回车` 将单词保存到有道词典的单词本，在保存失败的时候单词将保存在离线单词本中。
 
 ### 更多
 
