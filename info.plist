@@ -4,6 +4,8 @@
 <dict>
 	<key>bundleid</key>
 	<string>whyliam.workflows.youdao</string>
+	<key>category</key>
+	<string>Tools</string>
 	<key>connections</key>
 	<dict>
 		<key>27E60581-8105-41DD-8E29-4FE811179098</key>
@@ -132,7 +134,7 @@
 				<key>escaping</key>
 				<integer>35</integer>
 				<key>script</key>
-				<string>/usr/bin/python splitargs.py "{query}" 0</string>
+				<string>/usr/bin/python splitargs.py "{query}" "search"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -174,7 +176,7 @@
 				<key>escaping</key>
 				<integer>35</integer>
 				<key>script</key>
-				<string>/usr/bin/python splitargs.py "{query}" 2</string>
+				<string>/usr/bin/python splitargs.py "{query}" "pronounce"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -261,7 +263,7 @@
 				<key>escaping</key>
 				<integer>32</integer>
 				<key>script</key>
-				<string>/usr/bin/python splitargs.py "{query}" 1</string>
+				<string>/usr/bin/python splitargs.py "{query}" "copy"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -284,7 +286,7 @@
 				<key>escaping</key>
 				<integer>32</integer>
 				<key>script</key>
-				<string>/usr/bin/python splitargs.py "{query}" 1</string>
+				<string>/usr/bin/python splitargs.py "{query}" "copy"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -389,7 +391,7 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>有道翻译 Workflow v2.2.1
+	<string>有道翻译 Workflow v2.2.2
 
 默认快捷键 yd, 查看翻译结果。
 
@@ -520,8 +522,8 @@
 		<string>zhiyun_key</string>
 	</array>
 	<key>version</key>
-	<string>2.2.1</string>
+	<string>2.2.2</string>
 	<key>webaddress</key>
-	<string>https://github.com/liszd/whyliam.workflows.youdao</string>
+	<string>https://github.com/whyliam/whyliam.workflows.youdao</string>
 </dict>
 </plist>

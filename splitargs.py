@@ -10,22 +10,27 @@ sys.setdefaultencoding('utf8')
 def getargs(wf):
     query = sys.argv[1]
     query = query.split('$%')
-    part = int(sys.argv[2])
+    operation = str(sys.argv[2])
 
-    if query[4]:
+    # 是否有更新
+    if query[4] == 'update':
+        wf.start_update()
+    # 是否有错误
+    elif query[4] == 'error':
         import webbrowser
-        new = 2
         url = "https://blog.naaln.com/2017/04/alfred-youdao-intro/"
-        webbrowser.open(url, new=new)
-        return 0
+        webbrowser.open(url)
+        return
+    elif query[4] != '':
+        return
 
-    if part == 0:
+    if operation == 'search':
         # 查询的单词
         sys.stdout.write(query[0].strip())
-    elif part == 1:
+    elif operation == 'copy':
         # 翻译的结果
         sys.stdout.write(query[1].strip())
-    elif part == 2:
+    elif operation == "pronounce":
         # 发音
         if query[2]:
             bashCommand = "say --voice='Samantha' " + query[2]
@@ -36,5 +41,7 @@ def getargs(wf):
 
 
 if __name__ == '__main__':
-    wf = Workflow3()
+    wf = Workflow3(update_settings={
+        'github_slug': 'whyliam/whyliam.workflows.youdao',
+    })
     sys.exit(wf.run(getargs))

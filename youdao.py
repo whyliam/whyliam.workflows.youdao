@@ -154,17 +154,23 @@ def get_history_data():
                 arg=line['arg'], valid=True, icon=line['icon'])
 
 
-def check_Update():
+def is_expired():
     # 检查更新
     if wf.update_available:
-        workflow.update.install_update()
-        arg = ['', '', '', '', 'error']
+        arg = ['', '', '', '', 'update']
         arg = '$%'.join(arg)
         wf.add_item(
-            title='有新版本更新', subtitle='', arg=arg,
+            title='马上更新', subtitle='有新版本更新', arg=arg,
             valid=True, icon=ICON_UPDATE)
-    else:
-        wf.add_item('有道翻译')
+
+        arg = ['', '', '', '', 'not_update']
+        arg = '$%'.join(arg)
+        wf.add_item(
+            title='暂不更新', subtitle='有新版本更新', arg=arg,
+            valid=True, icon=ICON_ERROR)
+        wf.send_feedback()
+        return True
+    return False
 
 
 def is_English(query):
@@ -176,7 +182,7 @@ def is_English(query):
     return True
 
 
-def get_translation(query, isEnglish, rt):
+def add_translation(query, isEnglish, rt):
     # 翻译结果
     subtitle = '翻译结果'
     translations = rt["translation"]
@@ -192,7 +198,7 @@ def get_translation(query, isEnglish, rt):
             valid=True, icon=ICON_DEFAULT)
 
 
-def get_phonetic(query, isEnglish, rt):
+def add_phonetic(query, isEnglish, rt):
     # 发音
     if u'basic' in rt.keys():
         if rt["basic"] != None:
@@ -212,7 +218,7 @@ def get_phonetic(query, isEnglish, rt):
                     valid=True, icon=ICON_PHONETIC)
 
 
-def get_explains(query, isEnglish, rt):
+def add_explains(query, isEnglish, rt):
     # 简明释意
     if u'basic' in rt.keys():
         if rt["basic"] != None:
@@ -227,7 +233,7 @@ def get_explains(query, isEnglish, rt):
                     valid=True, icon=ICON_PHONETIC)
 
 
-def get_web_translation(query, isEnglish, rt):
+def add_web_translation(query, isEnglish, rt):
   # 网络翻译
     if u'web' in rt.keys():
         if rt["web"] != None:
@@ -250,13 +256,12 @@ def get_web_translation(query, isEnglish, rt):
 
 
 def main(wf):
+    if is_expired():
+        return
+    
     query = wf.args[0].strip()
     if not isinstance(query, unicode):
         query = query.decode('utf8')
-
-    if not query:
-        check_Update()
-        wf.send_feedback()
 
     if query == "*":
         get_history_data()
@@ -274,10 +279,10 @@ def main(wf):
 
         elif errorCode == "0":
             isEnglish = is_English(query)
-            get_translation(query, isEnglish, rt)
-            get_phonetic(query, isEnglish, rt)
-            get_explains(query, isEnglish, rt)
-            get_web_translation(query, isEnglish, rt)
+            add_translation(query, isEnglish, rt)
+            add_phonetic(query, isEnglish, rt)
+            add_explains(query, isEnglish, rt)
+            add_web_translation(query, isEnglish, rt)
 
         else:
             title = '有道也翻译不出来了'
@@ -292,7 +297,7 @@ def main(wf):
 
 if __name__ == '__main__':
     wf = Workflow3(update_settings={
-        'github_slug': 'liszd/whyliam.workflows.youdao',
+        'github_slug': 'whyliam/whyliam.workflows.youdao',
         'frequency': 7
     })
     sys.exit(wf.run(main))
