@@ -42,6 +42,6 @@ def getargs(wf):
 
 if __name__ == '__main__':
     wf = Workflow3(update_settings={
-        'github_slug': 'liszd/whyliam.workflows.youdao',
+        'github_slug': 'whyliam/whyliam.workflows.youdao',
     })
     sys.exit(wf.run(getargs))

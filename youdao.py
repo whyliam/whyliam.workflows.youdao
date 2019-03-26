@@ -297,7 +297,7 @@ def main(wf):
 
 if __name__ == '__main__':
     wf = Workflow3(update_settings={
-        'github_slug': 'liszd/whyliam.workflows.youdao',
+        'github_slug': 'whyliam/whyliam.workflows.youdao',
         'frequency': 7
     })
     sys.exit(wf.run(main))
