@@ -1,6 +1,6 @@
 # whyliam.workflows.youdao
 
-## 有道翻译 workflow v2.2.2
+## 有道翻译 workflow v2.2.3
 
 默认快捷键 `yd`，查看翻译结果。
 
@@ -24,7 +24,7 @@
 
 ### 下载
 
-[点击下载](https://github.com/whyliam/whyliam.workflows.youdao/releases/download/2.2.2/whyliam.workflows.youdao.alfredworkflow)
+[点击下载](https://github.com/whyliam/whyliam.workflows.youdao/releases/download/2.2.3/whyliam.workflows.youdao.alfredworkflow)
 
 ### 安装
 
