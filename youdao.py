@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from workflow import Workflow3, web
+import sentry_sdk
+import os
 import json
 import uuid
 import hashlib
@@ -27,7 +29,7 @@ ERRORCODE_DICT = {
     "105": "不支持的签名类型",
     "106": "不支持的响应类型",
     "107": "不支持的传输加密类型",
-    "108": "appKey无效，注册账号， 登录后台创建应用和实例并完成绑定， 可获得应用ID和密钥等信息，其中应用ID就是appKey（ 注意不是应用密钥）",
+    "108": "appKey无效，注册账号， 登录后台创建应用和实例并完成绑定，可获得应用ID和密钥等信息，其中应用ID就是appKey（ 注意不是应用密钥）",
     "109": "batchLog格式不正确",
     "110": "无相关服务的有效实例",
     "111": "开发者账号无效",
@@ -55,9 +57,22 @@ ICON_UPDATE = 'icon_update.png'
 ICON_ERROR = 'icon_error.png'
 
 
+def init_sentry():
+    # 收集错误信息
+    if os.getenv('sentry', 'False').strip():
+        sentry_sdk.init(
+            "https://4d5a5b1f2e68484da9edd9076b86e9b7@sentry.io/1500348")
+        with sentry_sdk.configure_scope() as scope:
+            scope.set_tag("version", wf.version)
+
+
+def sentry_message(msg):
+    if os.getenv('sentry', 'False').strip():
+        sentry_sdk.capture_message(msg)
+
+
 def get_youdao_url(query):
     # 构建有道翻译URL
-    import os
     import random
 
     zhiyun_id = os.getenv('zhiyun_id', '').strip()
@@ -72,6 +87,7 @@ def get_youdao_url(query):
             youdao_keyfrom = YOUDAO_DEFAULT_KEYFROM[i]
             youdao_key = YOUDAO_DEFAULT_KEY[i]
         url = get_youdao_old_url(query, youdao_keyfrom, youdao_key)
+    wf.logger.debug(url)
     return url
 
 
@@ -201,7 +217,7 @@ def add_translation(query, isEnglish, rt):
 def add_phonetic(query, isEnglish, rt):
     # 发音
     if u'basic' in rt.keys():
-        if rt["basic"] != None:
+        if rt["basic"] is not None:
             if rt["basic"].get("phonetic"):
                 title = ""
                 if rt["basic"].get("us-phonetic"):
@@ -221,7 +237,7 @@ def add_phonetic(query, isEnglish, rt):
 def add_explains(query, isEnglish, rt):
     # 简明释意
     if u'basic' in rt.keys():
-        if rt["basic"] != None:
+        if rt["basic"] is not None:
             for i in range(len(rt["basic"]["explains"])):
                 title = rt["basic"]["explains"][i]
                 subtitle = '简明释意'
@@ -236,7 +252,7 @@ def add_explains(query, isEnglish, rt):
 def add_web_translation(query, isEnglish, rt):
   # 网络翻译
     if u'web' in rt.keys():
-        if rt["web"] != None:
+        if rt["web"] is not None:
             for i in range(len(rt["web"])):
                 titles = rt["web"][i]["value"]
                 for title in titles:
@@ -258,7 +274,7 @@ def add_web_translation(query, isEnglish, rt):
 def main(wf):
     if is_expired():
         return
-    
+
     query = wf.args[0].strip()
     if not isinstance(query, unicode):
         query = query.decode('utf8')
@@ -285,6 +301,7 @@ def main(wf):
             add_web_translation(query, isEnglish, rt)
 
         else:
+            sentry_message(str(rt))
             title = '有道也翻译不出来了'
             subtitle = '尝试一下去网站搜索'
             arg = [query, ' ', ' ', ' ']
@@ -300,4 +317,5 @@ if __name__ == '__main__':
         'github_slug': 'whyliam/whyliam.workflows.youdao',
         'frequency': 7
     })
+    init_sentry()
     sys.exit(wf.run(main))
