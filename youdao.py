@@ -120,7 +120,6 @@ def get_youdao_new_url(query, zhiyun_id, zhiyun_key):
     import hashlib
     import uuid
 
-    query = str(query)
     curtime = str(int(time.time()))
     salt = str(uuid.uuid1())
     signStr = zhiyun_id + truncate(query) + salt + curtime + zhiyun_key
@@ -130,7 +129,7 @@ def get_youdao_new_url(query, zhiyun_id, zhiyun_key):
         '?appKey=' + str(zhiyun_id) + \
         '&salt=' + str(salt) + \
         '&sign=' + str(sign) + \
-        '&q=' + urllib.quote(query) + \
+        '&q=' + urllib.quote(str(query)) + \
         '&from=auto' + \
         '&to=auto' + \
         '&signType=v3' + \
