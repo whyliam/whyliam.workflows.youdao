@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import functools
 import sys
 
 from celery.exceptions import (  # type: ignore
@@ -15,6 +16,17 @@ from sentry_sdk.tracing import Span
 from sentry_sdk._compat import reraise
 from sentry_sdk.integrations import Integration
 from sentry_sdk.integrations.logging import ignore_logger
+from sentry_sdk._types import MYPY
+
+if MYPY:
+    from typing import Any
+    from typing import TypeVar
+    from typing import Callable
+    from typing import Optional
+
+    from sentry_sdk._types import EventProcessor, Event, Hint, ExcInfo
+
+    F = TypeVar("F", bound=Callable[..., Any])
 
 
 CELERY_CONTROL_FLOW_EXCEPTIONS = (Retry, Ignore, Reject)
@@ -35,6 +47,7 @@ class CeleryIntegration(Integration):
         old_build_tracer = trace.build_tracer
 
         def sentry_build_tracer(name, task, *args, **kwargs):
+            # type: (Any, Any, *Any, **Any) -> Any
             if not getattr(task, "_sentry_is_patched", False):
                 # Need to patch both methods because older celery sometimes
                 # short-circuits to task.run if it thinks it's safe.
@@ -57,10 +70,18 @@ class CeleryIntegration(Integration):
         # Meaning that every task's breadcrumbs are full of stuff like "Task
         # <foo> raised unexpected <bar>".
         ignore_logger("celery.worker.job")
+        ignore_logger("celery.app.trace")
+
+        # This is stdout/err redirected to a logger, can't deal with this
+        # (need event_level=logging.WARN to reproduce)
+        ignore_logger("celery.redirected")
 
 
 def _wrap_apply_async(task, f):
+    # type: (Any, F) -> F
+    @functools.wraps(f)
     def apply_async(*args, **kwargs):
+        # type: (*Any, **Any) -> Any
         hub = Hub.current
         integration = hub.get_integration(CeleryIntegration)
         if integration is not None and integration.propagate_traces:
@@ -71,19 +92,27 @@ def _wrap_apply_async(task, f):
                 headers[key] = value
             if headers is not None:
                 kwargs["headers"] = headers
-        return f(*args, **kwargs)
 
-    return apply_async
+            with hub.start_span(op="celery.submit", description=task.name):
+                return f(*args, **kwargs)
+        else:
+            return f(*args, **kwargs)
+
+    return apply_async  # type: ignore
 
 
 def _wrap_tracer(task, f):
+    # type: (Any, F) -> F
+
     # Need to wrap tracer for pushing the scope before prerun is sent, and
     # popping it after postrun is sent.
     #
     # This is the reason we don't use signals for hooking in the first place.
     # Also because in Celery 3, signal dispatch returns early if one handler
     # crashes.
+    @functools.wraps(f)
     def _inner(*args, **kwargs):
+        # type: (*Any, **Any) -> Any
         hub = Hub.current
         if hub.get_integration(CeleryIntegration) is None:
             return f(*args, **kwargs)
@@ -94,23 +123,35 @@ def _wrap_tracer(task, f):
             scope.add_event_processor(_make_event_processor(task, *args, **kwargs))
 
             span = Span.continue_from_headers(args[3].get("headers") or {})
+            span.op = "celery.task"
             span.transaction = "unknown celery task"
+
+            # Could possibly use a better hook than this one
+            span.set_status("ok")
 
             with capture_internal_exceptions():
                 # Celery task objects are not a thing to be trusted. Even
                 # something such as attribute access can fail.
                 span.transaction = task.name
 
-            with hub.span(span):
+            with hub.start_span(span):
                 return f(*args, **kwargs)
 
-    return _inner
+    return _inner  # type: ignore
 
 
 def _wrap_task_call(task, f):
+    # type: (Any, F) -> F
+
     # Need to wrap task call because the exception is caught before we get to
     # see it. Also celery's reported stacktrace is untrustworthy.
+
+    # functools.wraps is important here because celery-once looks at this
+    # method's name.
+    # https://github.com/getsentry/sentry-python/issues/421
+    @functools.wraps(f)
     def _inner(*args, **kwargs):
+        # type: (*Any, **Any) -> Any
         try:
             return f(*args, **kwargs)
         except Exception:
@@ -119,11 +160,14 @@ def _wrap_task_call(task, f):
                 _capture_exception(task, exc_info)
             reraise(*exc_info)
 
-    return _inner
+    return _inner  # type: ignore
 
 
 def _make_event_processor(task, uuid, args, kwargs, request=None):
+    # type: (Any, Any, Any, Any, Optional[Any]) -> EventProcessor
     def event_processor(event, hint):
+        # type: (Event, Hint) -> Optional[Event]
+
         with capture_internal_exceptions():
             extra = event.setdefault("extra", {})
             extra["celery-job"] = {
@@ -147,25 +191,44 @@ def _make_event_processor(task, uuid, args, kwargs, request=None):
 
 
 def _capture_exception(task, exc_info):
+    # type: (Any, ExcInfo) -> None
     hub = Hub.current
 
     if hub.get_integration(CeleryIntegration) is None:
         return
     if isinstance(exc_info[1], CELERY_CONTROL_FLOW_EXCEPTIONS):
+        # ??? Doesn't map to anything
+        _set_status(hub, "aborted")
         return
+
+    _set_status(hub, "internal_error")
+
     if hasattr(task, "throws") and isinstance(exc_info[1], task.throws):
         return
 
+    # If an integration is there, a client has to be there.
+    client = hub.client  # type: Any
+
     event, hint = event_from_exception(
         exc_info,
-        client_options=hub.client.options,
+        client_options=client.options,
         mechanism={"type": "celery", "handled": False},
     )
 
     hub.capture_event(event, hint=hint)
 
 
+def _set_status(hub, status):
+    # type: (Hub, str) -> None
+    with capture_internal_exceptions():
+        with hub.configure_scope() as scope:
+            if scope.span is not None:
+                scope.span.set_status(status)
+
+
 def _patch_worker_exit():
+    # type: () -> None
+
     # Need to flush queue before worker shutdown because a crashing worker will
     # call os._exit
     from billiard.pool import Worker  # type: ignore
@@ -173,6 +236,7 @@ def _patch_worker_exit():
     old_workloop = Worker.workloop
 
     def sentry_workloop(*args, **kwargs):
+        # type: (*Any, **Any) -> Any
         try:
             return old_workloop(*args, **kwargs)
         finally:

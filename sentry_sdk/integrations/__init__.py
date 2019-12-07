@@ -72,7 +72,7 @@ def setup_integrations(integrations, with_defaults=True):
                 instance = integration_cls()
                 integrations[instance.identifier] = instance
 
-    for identifier, integration in iteritems(integrations):  # type: ignore
+    for identifier, integration in iteritems(integrations):
         with _installer_lock:
             if identifier not in _installed_integrations:
                 logger.debug(
@@ -82,7 +82,7 @@ def setup_integrations(integrations, with_defaults=True):
                     type(integration).setup_once()
                 except NotImplementedError:
                     if getattr(integration, "install", None) is not None:
-                        logger.warn(
+                        logger.warning(
                             "Integration %s: The install method is "
                             "deprecated. Use `setup_once`.",
                             identifier,

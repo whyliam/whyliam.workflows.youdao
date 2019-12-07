@@ -1,19 +1,29 @@
 import re
 import uuid
 import contextlib
-import collections
 
 from datetime import datetime
 
-from sentry_sdk.utils import capture_internal_exceptions, concat_strings
+import sentry_sdk
 
+from sentry_sdk.utils import capture_internal_exceptions, logger, to_string
+from sentry_sdk._compat import PY2
+from sentry_sdk._types import MYPY
 
-if False:
+if PY2:
+    from collections import Mapping
+else:
+    from collections.abc import Mapping
+
+if MYPY:
+    import typing
+
+    from typing import Generator
     from typing import Optional
     from typing import Any
     from typing import Dict
-    from typing import Mapping
     from typing import List
+    from typing import Tuple
 
 _traceparent_header_format_re = re.compile(
     "^[ \t]*"  # whitespace
@@ -24,10 +34,10 @@ _traceparent_header_format_re = re.compile(
 )
 
 
-class EnvironHeaders(collections.Mapping):  # type: ignore
+class EnvironHeaders(Mapping):  # type: ignore
     def __init__(
         self,
-        environ,  # type: Mapping[str, str]
+        environ,  # type: typing.Mapping[str, str]
         prefix="HTTP_",  # type: str
     ):
         # type: (...) -> None
@@ -35,12 +45,15 @@ class EnvironHeaders(collections.Mapping):  # type: ignore
         self.prefix = prefix
 
     def __getitem__(self, key):
+        # type: (str) -> Optional[Any]
         return self.environ[self.prefix + key.replace("-", "_").upper()]
 
     def __len__(self):
+        # type: () -> int
         return sum(1 for _ in iter(self))
 
     def __iter__(self):
+        # type: () -> Generator[str, None, None]
         for k in self.environ:
             if not isinstance(k, str):
                 continue
@@ -50,6 +63,31 @@ class EnvironHeaders(collections.Mapping):  # type: ignore
                 continue
 
             yield k[len(self.prefix) :]
+
+
+class _SpanRecorder(object):
+    __slots__ = ("maxlen", "finished_spans", "open_span_count")
+
+    def __init__(self, maxlen):
+        # type: (int) -> None
+        self.maxlen = maxlen
+        self.open_span_count = 0  # type: int
+        self.finished_spans = []  # type: List[Span]
+
+    def start_span(self, span):
+        # type: (Span) -> None
+
+        # This is just so that we don't run out of memory while recording a lot
+        # of spans. At some point we just stop and flush out the start of the
+        # trace tree (i.e. the first n spans with the smallest
+        # start_timestamp).
+        self.open_span_count += 1
+        if self.open_span_count > self.maxlen:
+            span._span_recorder = None
+
+    def finish_span(self, span):
+        # type: (Span) -> None
+        self.finished_spans.append(span)
 
 
 class Span(object):
@@ -66,20 +104,24 @@ class Span(object):
         "timestamp",
         "_tags",
         "_data",
-        "_finished_spans",
+        "_span_recorder",
+        "hub",
+        "_context_manager_state",
     )
 
     def __init__(
         self,
-        trace_id=None,
-        span_id=None,
-        parent_span_id=None,
-        same_process_as_parent=True,
-        sampled=None,
-        transaction=None,
-        op=None,
-        description=None,
+        trace_id=None,  # type: Optional[str]
+        span_id=None,  # type: Optional[str]
+        parent_span_id=None,  # type: Optional[str]
+        same_process_as_parent=True,  # type: bool
+        sampled=None,  # type: Optional[bool]
+        transaction=None,  # type: Optional[str]
+        op=None,  # type: Optional[str]
+        description=None,  # type: Optional[str]
+        hub=None,  # type: Optional[sentry_sdk.Hub]
     ):
+        # type: (...) -> None
         self.trace_id = trace_id or uuid.uuid4().hex
         self.span_id = span_id or uuid.uuid4().hex[16:]
         self.parent_span_id = parent_span_id
@@ -88,15 +130,24 @@ class Span(object):
         self.transaction = transaction
         self.op = op
         self.description = description
+        self.hub = hub
         self._tags = {}  # type: Dict[str, str]
         self._data = {}  # type: Dict[str, Any]
-        self._finished_spans = []  # type: List[Span]
-        self.start_timestamp = datetime.now()
+        self.start_timestamp = datetime.utcnow()
 
         #: End timestamp of span
-        self.timestamp = None
+        self.timestamp = None  # type: Optional[datetime]
+
+        self._span_recorder = None  # type: Optional[_SpanRecorder]
+
+    def init_finished_spans(self, maxlen):
+        # type: (int) -> None
+        if self._span_recorder is None:
+            self._span_recorder = _SpanRecorder(maxlen)
+        self._span_recorder.start_span(self)
 
     def __repr__(self):
+        # type: () -> str
         return (
             "<%s(transaction=%r, trace_id=%r, span_id=%r, parent_span_id=%r, sampled=%r)>"
             % (
@@ -109,7 +160,29 @@ class Span(object):
             )
         )
 
+    def __enter__(self):
+        # type: () -> Span
+        hub = self.hub or sentry_sdk.Hub.current
+
+        _, scope = hub._stack[-1]
+        old_span = scope.span
+        scope.span = self
+        self._context_manager_state = (hub, scope, old_span)
+        return self
+
+    def __exit__(self, ty, value, tb):
+        # type: (Optional[Any], Optional[Any], Optional[Any]) -> None
+        if value is not None:
+            self._tags.setdefault("status", "internal_error")
+
+        hub, scope, old_span = self._context_manager_state
+        del self._context_manager_state
+
+        self.finish(hub)
+        scope.span = old_span
+
     def new_span(self, **kwargs):
+        # type: (**Any) -> Span
         rv = type(self)(
             trace_id=self.trace_id,
             span_id=None,
@@ -117,32 +190,38 @@ class Span(object):
             sampled=self.sampled,
             **kwargs
         )
-        rv._finished_spans = self._finished_spans
+
+        rv._span_recorder = self._span_recorder
         return rv
 
     @classmethod
     def continue_from_environ(cls, environ):
+        # type: (typing.Mapping[str, str]) -> Span
         return cls.continue_from_headers(EnvironHeaders(environ))
 
     @classmethod
     def continue_from_headers(cls, headers):
+        # type: (typing.Mapping[str, str]) -> Span
         parent = cls.from_traceparent(headers.get("sentry-trace"))
         if parent is None:
             return cls()
-        return parent.new_span(same_process_as_parent=False)
+        parent.same_process_as_parent = False
+        return parent
 
     def iter_headers(self):
+        # type: () -> Generator[Tuple[str, str], None, None]
         yield "sentry-trace", self.to_traceparent()
 
     @classmethod
     def from_traceparent(cls, traceparent):
+        # type: (Optional[str]) -> Optional[Span]
         if not traceparent:
             return None
 
         if traceparent.startswith("00-") and traceparent.endswith("-00"):
             traceparent = traceparent[3:-3]
 
-        match = _traceparent_header_format_re.match(traceparent)
+        match = _traceparent_header_format_re.match(str(traceparent))
         if match is None:
             return None
 
@@ -158,9 +237,10 @@ class Span(object):
         else:
             sampled = None
 
-        return cls(trace_id=trace_id, span_id=span_id, sampled=sampled)
+        return cls(trace_id=trace_id, parent_span_id=span_id, sampled=sampled)
 
     def to_traceparent(self):
+        # type: () -> str
         sampled = ""
         if self.sampled is True:
             sampled = "1"
@@ -169,35 +249,143 @@ class Span(object):
         return "%s-%s-%s" % (self.trace_id, self.span_id, sampled)
 
     def to_legacy_traceparent(self):
+        # type: () -> str
         return "00-%s-%s-00" % (self.trace_id, self.span_id)
 
     def set_tag(self, key, value):
+        # type: (str, Any) -> None
         self._tags[key] = value
 
     def set_data(self, key, value):
+        # type: (str, Any) -> None
         self._data[key] = value
 
-    def finish(self):
-        self.timestamp = datetime.now()
-        self._finished_spans.append(self)
+    def set_status(self, value):
+        # type: (str) -> None
+        self.set_tag("status", value)
 
-    def to_json(self):
-        return {
+    def set_http_status(self, http_status):
+        # type: (int) -> None
+        self.set_tag("http.status_code", http_status)
+
+        if http_status < 400:
+            self.set_status("ok")
+        elif 400 <= http_status < 500:
+            if http_status == 403:
+                self.set_status("permission_denied")
+            elif http_status == 404:
+                self.set_status("not_found")
+            elif http_status == 429:
+                self.set_status("resource_exhausted")
+            elif http_status == 413:
+                self.set_status("failed_precondition")
+            elif http_status == 401:
+                self.set_status("unauthenticated")
+            elif http_status == 409:
+                self.set_status("already_exists")
+            else:
+                self.set_status("invalid_argument")
+        elif 500 <= http_status < 600:
+            if http_status == 504:
+                self.set_status("deadline_exceeded")
+            elif http_status == 501:
+                self.set_status("unimplemented")
+            elif http_status == 503:
+                self.set_status("unavailable")
+            else:
+                self.set_status("internal_error")
+        else:
+            self.set_status("unknown_error")
+
+    def is_success(self):
+        # type: () -> bool
+        return self._tags.get("status") == "ok"
+
+    def finish(self, hub=None):
+        # type: (Optional[sentry_sdk.Hub]) -> Optional[str]
+        hub = hub or self.hub or sentry_sdk.Hub.current
+
+        if self.timestamp is not None:
+            # This transaction is already finished, so we should not flush it again.
+            return None
+
+        self.timestamp = datetime.utcnow()
+
+        _maybe_create_breadcrumbs_from_span(hub, self)
+
+        if self._span_recorder is None:
+            return None
+
+        self._span_recorder.finish_span(self)
+
+        if self.transaction is None:
+            # If this has no transaction set we assume there's a parent
+            # transaction for this span that would be flushed out eventually.
+            return None
+
+        client = hub.client
+
+        if client is None:
+            # We have no client and therefore nowhere to send this transaction
+            # event.
+            return None
+
+        if not self.sampled:
+            # At this point a `sampled = None` should have already been
+            # resolved to a concrete decision. If `sampled` is `None`, it's
+            # likely that somebody used `with sentry_sdk.Hub.start_span(..)` on a
+            # non-transaction span and later decided to make it a transaction.
+            if self.sampled is None:
+                logger.warning("Discarding transaction Span without sampling decision")
+
+            return None
+
+        return hub.capture_event(
+            {
+                "type": "transaction",
+                "transaction": self.transaction,
+                "contexts": {"trace": self.get_trace_context()},
+                "tags": self._tags,
+                "timestamp": self.timestamp,
+                "start_timestamp": self.start_timestamp,
+                "spans": [
+                    s.to_json(client)
+                    for s in self._span_recorder.finished_spans
+                    if s is not self
+                ],
+            }
+        )
+
+    def to_json(self, client):
+        # type: (Optional[sentry_sdk.Client]) -> Dict[str, Any]
+        rv = {
             "trace_id": self.trace_id,
             "span_id": self.span_id,
             "parent_span_id": self.parent_span_id,
             "same_process_as_parent": self.same_process_as_parent,
-            "transaction": self.transaction,
             "op": self.op,
             "description": self.description,
             "start_timestamp": self.start_timestamp,
             "timestamp": self.timestamp,
-            "tags": self._tags,
-            "data": self._data,
-        }
+        }  # type: Dict[str, Any]
+
+        transaction = self.transaction
+        if transaction:
+            rv["transaction"] = transaction
+
+        tags = self._tags
+        if tags:
+            rv["tags"] = tags
+
+        data = self._data
+        if data:
+            rv["data"] = data
+
+        return rv
 
     def get_trace_context(self):
-        return {
+        # type: () -> Any
+        rv = {
             "trace_id": self.trace_id,
             "span_id": self.span_id,
             "parent_span_id": self.parent_span_id,
@@ -205,57 +393,87 @@ class Span(object):
             "description": self.description,
         }
 
+        if "status" in self._tags:
+            rv["status"] = self._tags["status"]
+
+        return rv
+
+
+def _format_sql(cursor, sql):
+    # type: (Any, str) -> Optional[str]
+
+    real_sql = None
+
+    # If we're using psycopg2, it could be that we're
+    # looking at a query that uses Composed objects. Use psycopg2's mogrify
+    # function to format the query. We lose per-parameter trimming but gain
+    # accuracy in formatting.
+    try:
+        if hasattr(cursor, "mogrify"):
+            real_sql = cursor.mogrify(sql)
+            if isinstance(real_sql, bytes):
+                real_sql = real_sql.decode(cursor.connection.encoding)
+    except Exception:
+        real_sql = None
+
+    return real_sql or to_string(sql)
+
 
 @contextlib.contextmanager
-def record_sql_queries(hub, queries, label=""):
-    if not queries:
-        yield None
+def record_sql_queries(
+    hub,  # type: sentry_sdk.Hub
+    cursor,  # type: Any
+    query,  # type: Any
+    params_list,  # type:  Any
+    paramstyle,  # type: Optional[str]
+    executemany,  # type: bool
+):
+    # type: (...) -> Generator[Span, None, None]
+
+    # TODO: Bring back capturing of params by default
+    if hub.client and hub.client.options["_experiments"].get(
+        "record_sql_params", False
+    ):
+        if not params_list or params_list == [None]:
+            params_list = None
+
+        if paramstyle == "pyformat":
+            paramstyle = "format"
     else:
-        description = None
-        with capture_internal_exceptions():
-            strings = [label]
-            for query in queries:
-                hub.add_breadcrumb(message=query, category="query")
-                strings.append(query)
+        params_list = None
+        paramstyle = None
 
-            description = concat_strings(strings)
+    query = _format_sql(cursor, query)
 
-        if description is None:
-            yield None
-        else:
-            with hub.span(op="db", description=description) as span:
-                yield span
+    data = {}
+    if params_list is not None:
+        data["db.params"] = params_list
+    if paramstyle is not None:
+        data["db.paramstyle"] = paramstyle
+    if executemany:
+        data["db.executemany"] = True
 
+    with capture_internal_exceptions():
+        hub.add_breadcrumb(message=query, category="query", data=data)
 
-@contextlib.contextmanager
-def record_http_request(hub, url, method):
-    data_dict = {"url": url, "method": method}
-
-    with hub.span(op="http", description="%s %s" % (url, method)) as span:
-        try:
-            yield data_dict
-        finally:
-            if span is not None:
-                if "status_code" in data_dict:
-                    span.set_tag("http.status_code", data_dict["status_code"])
-                for k, v in data_dict.items():
-                    span.set_data(k, v)
+    with hub.start_span(op="db", description=query) as span:
+        for k, v in data.items():
+            span.set_data(k, v)
+        yield span
 
 
-def maybe_create_breadcrumbs_from_span(hub, span):
+def _maybe_create_breadcrumbs_from_span(hub, span):
+    # type: (sentry_sdk.Hub, Span) -> None
     if span.op == "redis":
-        hub.add_breadcrumb(type="redis", category="redis", data=span._tags)
-    elif span.op == "http" and not span._tags.get("error"):
         hub.add_breadcrumb(
-            type="http",
-            category="httplib",
-            data=span._data,
-            hint={"httplib_response": span._data.get("httplib_response")},
+            message=span.description, type="redis", category="redis", data=span._tags
         )
+    elif span.op == "http":
+        hub.add_breadcrumb(type="http", category="httplib", data=span._data)
     elif span.op == "subprocess":
         hub.add_breadcrumb(
             type="subprocess",
             category="subprocess",
+            message=span.description,
             data=span._data,
-            hint={"popen_instance": span._data.get("popen_instance")},
         )
