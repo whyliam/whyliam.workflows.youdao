@@ -1,6 +1,6 @@
 # whyliam.workflows.youdao
 
-## 有道翻译 workflow v2.2.3
+## 有道翻译 workflow v3.0.0
 
 默认快捷键 `yd`，查看翻译结果。
 
@@ -24,27 +24,17 @@
 
 ### 下载
 
-[点击下载](https://github.com/whyliam/whyliam.workflows.youdao/releases/download/2.2.3/whyliam.workflows.youdao.alfredworkflow)
+[点击下载](https://github.com/whyliam/whyliam.workflows.youdao/releases/download/3.0.0/whyliam.workflows.youdao.alfredworkflow)
 
 ### 安装
 
 1\. [下载](https://github.com/whyliam/whyliam.workflows.youdao/releases)最新版本双击安装
 
-**老版本有道**
-
-2\. [注册](http://fanyi.youdao.com/openapi?path=data-mode)有道翻译 API
-
-3\. 在 Alfred 的设置中填入对应的`Key`和`Keyfrom`
-
-![](http://ww2.sinaimg.cn/large/006tNbRwgy1feno2vevklj31a30os0u5.jpg)
-
-**或者 新版本有道智云**
-
 2\. [注册](http://ai.youdao.com/appmgr.s)有道智云应用
 
 3\. 在 Alfred 的设置中填入对应的`应用ID`和`应用密钥`
 
-![](https://ws2.sinaimg.cn/large/006tKfTcgy1fiosfttuejj31kw0vb493.jpg)
+![](https://tva1.sinaimg.cn/large/006tNbRwly1g9oapg37t0j31am0sgjxr.jpg)
 
 4\. 在 Alfred 的设置中设置快捷方式键
 ![](http://ww2.sinaimg.cn/large/006tNbRwgy1feno6pzaxdj31a60p0jsl.jpg)
@@ -93,6 +83,23 @@
 
 查询单词后按 `Alt+回车` 将单词保存到有道词典的单词本，在保存失败的时候单词将保存在离线单词本中。
 
+### 其他配置
+
+| 关键字         | 说明                   | 默认                                   |
+| -------------- | ---------------------- | -------------------------------------- |
+| username       | 有道在线单词本用户名   |                                        |
+| password       | 有道在线单词本密码     |                                        |
+| filepath       | 有道离线单词本保存位置 | ~/Documents/Alfred-youdao-wordbook.xml |
+| youdao_key     | 老版有道翻译Key        |                                        |
+| youdao_keyfrom | 老版有道翻译Keyfrom    |                                        |
+| zhiyun_id      | 有道智云ID             |                                        |
+| zhiyun_key     | 有道智云Key            |                                        |
+
+### 问题说明
+
+1 .**macOS** catalina  需要在 系统设置-安全性与隐私-辅助功能，重新授权`Alfred 4`权限。
+1 .`whyliam.workflows.youdao 3.x`仅支持`Alfred 4`，`Alfred 3`请使用[历史版本](https://github.com/whyliam/whyliam.workflows.youdao/releases)。
+
 ### 更多
 
 更多问题参见[Alfred 有道翻译简介](https://blog.naaln.com/2017/04/alfred-youdao-intro/)
@@ -120,3 +127,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+

@@ -22,6 +22,11 @@ YOUDAO_DEFAULT_KEY = (2002493135, 2002493136, 2002493137,
                       1947745089, 1947745090)
 
 ERRORCODE_DICT = {
+    "20": "要翻译的文本过长",
+    "30": "无法进行有效的翻译",
+    "40": "不支持的语言类型",
+    "50": "无效的key",
+    "60": "无词典结果，仅在获取词典结果生效",
     "101": "缺少必填的参数，出现这个情况还可能是et的值和实际加密方式不对应",
     "102": "不支持的语言类型",
     "103": "翻译文本过长",
@@ -29,7 +34,8 @@ ERRORCODE_DICT = {
     "105": "不支持的签名类型",
     "106": "不支持的响应类型",
     "107": "不支持的传输加密类型",
-    "108": "appKey无效，注册账号， 登录后台创建应用和实例并完成绑定，可获得应用ID和密钥等信息，其中应用ID就是appKey（ 注意不是应用密钥）",
+    "108": "appKey无效，注册账号， 登录后台创建应用和实例并完成绑定，\
+        可获得应用ID和密钥等信息，其中应用ID就是appKey（ 注意不是应用密钥）",
     "109": "batchLog格式不正确",
     "110": "无相关服务的有效实例",
     "111": "开发者账号无效",
@@ -63,12 +69,24 @@ def init_sentry():
         sentry_sdk.init(
             "https://4d5a5b1f2e68484da9edd9076b86e9b7@sentry.io/1500348")
         with sentry_sdk.configure_scope() as scope:
-            scope.set_tag("version", wf.version)
+            user_id = get_user_id()
+            scope.user = {"id": user_id}
+            scope.set_tag("version", str(wf.version))
 
 
-def sentry_message(msg):
+def get_user_id():
+    user_id = wf.stored_data('user_id')
+    if user_id == None:
+        user_id = str(uuid.uuid1())
+    wf.store_data('user_id', user_id)
+    return user_id
+
+
+def sentry_message(errorCode, msg):
     if os.getenv('sentry', 'False').strip():
-        sentry_sdk.capture_message(msg)
+        with sentry_sdk.configure_scope() as scope:
+            scope.set_tag("errorCode", errorCode)
+        sentry_sdk.capture_message(msg) 
 
 
 def get_youdao_url(query):
@@ -163,10 +181,13 @@ def save_history_data(query, title, arg, ICON_DEFAULT):
 def get_history_data():
     with open('history.log', 'r') as file:
         for line in file.readlines()[-1:-10:-1]:
-            line = json.loads(line)
-            wf.add_item(
-                title=line['title'], subtitle=line['subtitle'],
-                arg=line['arg'], valid=True, icon=line['icon'])
+            try:
+                line = json.loads(line)
+                wf.add_item(
+                    title=line['title'], subtitle=line['subtitle'],
+                    arg=line['arg'], valid=True, icon=line['icon'])
+            except Exception as e:
+                pass
 
 
 def is_expired():
@@ -285,6 +306,8 @@ def main(wf):
         errorCode = str(rt.get("errorCode"))
 
         if ERRORCODE_DICT.has_key(errorCode):
+            if errorCode == "500":
+                sentry_message(errorCode, ERRORCODE_DICT[errorCode])
             arg = ['', '', '', '', 'error']
             arg = '$%'.join(arg)
             wf.add_item(
@@ -300,7 +323,7 @@ def main(wf):
             add_web_translation(query, isEnglish, rt)
 
         else:
-            sentry_message(str(rt))
+            sentry_message(errorCode, '有道也翻译不出来了')
             title = '有道也翻译不出来了'
             subtitle = '尝试一下去网站搜索'
             arg = [query, ' ', ' ', ' ']
