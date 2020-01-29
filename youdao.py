@@ -133,6 +133,13 @@ def truncate(q):
     return q if size <= 20 else q[0:10] + str(size) + q[size - 10:size]
 
 
+def is_all_chinese(strs):
+    for _char in strs:
+        if not '\u4e00' <= _char <= '\u9fa5':
+            if not '\u00A0' == _char and not '\u0020' == _char and not '\u3000' == _char:
+                return False
+    return True
+
 def get_youdao_new_url(query, zhiyun_id, zhiyun_key):
     import urllib
     import hashlib
@@ -142,14 +149,19 @@ def get_youdao_new_url(query, zhiyun_id, zhiyun_key):
     salt = str(uuid.uuid1())
     signStr = zhiyun_id + truncate(query) + salt + curtime + zhiyun_key
     sign = encrypt(signStr)
+    data_form = 'EN'
+    data_to = 'zh-CHS'
+    if is_all_chinese(query):
+        data_form = 'zh-CHS'
+        data_to = 'EN'
 
     url = 'https://openapi.youdao.com/api' + \
         '?appKey=' + str(zhiyun_id) + \
         '&salt=' + str(salt) + \
         '&sign=' + str(sign) + \
         '&q=' + urllib.quote(str(query)) + \
-        '&from=auto' + \
-        '&to=auto' + \
+        '&from=' + data_form + \
+        '&to=' + data_to + \
         '&signType=v3' + \
         '&curtime=' + curtime
     return url
