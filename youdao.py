@@ -133,13 +133,6 @@ def truncate(q):
     return q if size <= 20 else q[0:10] + str(size) + q[size - 10:size]
 
 
-def is_all_chinese(strs):
-    for _char in strs:
-        if not '\u4e00' <= _char <= '\u9fa5':
-            if not '\u00A0' == _char and not '\u0020' == _char and not '\u3000' == _char:
-                return False
-    return True
-
 def get_youdao_new_url(query, zhiyun_id, zhiyun_key):
     import urllib
     import hashlib
@@ -149,11 +142,20 @@ def get_youdao_new_url(query, zhiyun_id, zhiyun_key):
     salt = str(uuid.uuid1())
     signStr = zhiyun_id + truncate(query) + salt + curtime + zhiyun_key
     sign = encrypt(signStr)
-    data_form = 'EN'
-    data_to = 'zh-CHS'
-    if is_all_chinese(query):
+
+    language = query_language(query)
+    if language == "Chinese":
         data_form = 'zh-CHS'
-        data_to = 'EN'
+        data_to = 'en'
+    elif language == "Korean":
+        data_form = 'ko'
+        data_to = 'zh-CHS'
+    elif language == "Japanese":
+        data_form = 'ja'
+        data_to = 'zh-CHS'
+    else:
+        data_form = 'en'
+        data_to = 'zh-CHS'
 
     url = 'https://openapi.youdao.com/api' + \
         '?appKey=' + str(zhiyun_id) + \
@@ -221,22 +223,28 @@ def is_expired():
     return False
 
 
-def is_English(query):
-    # 检查英文翻译中文
+def query_language(query):
     import re
-
+    # 检查中文
     if re.search(ur"[\u4e00-\u9fa5]+", query):
-        return False
-    return True
+        return "Chinese"
+    # 检查韩语
+    if re.search(ur"[\uAC00-\uD7A3]+", query):
+        return "Korean"
+    # 检查日语
+    if re.search(ur"[\u0800-\u4e00]+", query):
+        return "Japanese"
+    return "Default"
 
-
-def add_translation(query, isEnglish, rt):
+def add_translation(query, isChinese, rt):
     # 翻译结果
     subtitle = '翻译结果'
     translations = rt["translation"]
     for title in translations:
-        arg = [query, title, query, '', ''] if isEnglish else [
-            query, title, title, '', '']
+        if isChinese:
+            arg = [query, title, title, '', '']
+        else:
+            arg = [query, title, query, '', '']
         arg = '$%'.join(arg)
 
         save_history_data(query, title, arg, ICON_DEFAULT)
@@ -246,7 +254,7 @@ def add_translation(query, isEnglish, rt):
             valid=True, icon=ICON_DEFAULT)
 
 
-def add_phonetic(query, isEnglish, rt):
+def add_phonetic(query, isChinese, rt):
     # 发音
     if u'basic' in rt.keys():
         if rt["basic"] is not None:
@@ -258,30 +266,34 @@ def add_phonetic(query, isEnglish, rt):
                     title += ("[英: " + rt["basic"]["uk-phonetic"] + "] ")
                 title = title if title else "[" + rt["basic"]["phonetic"] + "]"
                 subtitle = '有道发音'
-                arg = [query, title, query, '', ''] if isEnglish else [
-                    query, title, '', query, '']
+                if isChinese:
+                    arg = [query, title, '', query, ''] 
+                else:
+                    arg = [query, title, query, '', '']
                 arg = '$%'.join(arg)
                 wf.add_item(
                     title=title, subtitle=subtitle, arg=arg,
                     valid=True, icon=ICON_PHONETIC)
 
 
-def add_explains(query, isEnglish, rt):
+def add_explains(query, isChinese, rt):
     # 简明释意
     if u'basic' in rt.keys():
         if rt["basic"] is not None:
             for i in range(len(rt["basic"]["explains"])):
                 title = rt["basic"]["explains"][i]
                 subtitle = '简明释意'
-                arg = [query, title, query, '', ''] if isEnglish else [
-                    query, title, '', title, '']
+                if isChinese:
+                    arg = [query, title, '', title, '']
+                else:
+                    arg = [query, title, query, '', '']
                 arg = '$%'.join(arg)
                 wf.add_item(
                     title=title, subtitle=subtitle, arg=arg,
                     valid=True, icon=ICON_PHONETIC)
 
 
-def add_web_translation(query, isEnglish, rt):
+def add_web_translation(query, isChinese, rt):
   # 网络翻译
     if u'web' in rt.keys():
         if rt["web"] is not None:
@@ -290,12 +302,12 @@ def add_web_translation(query, isEnglish, rt):
                 for title in titles:
                     subtitle = '网络翻译: ' + rt["web"][i]["key"]
 
-                    if isEnglish:
-                        key = ''.join(rt["web"][i]["key"])
-                        arg = [query, title, key, '', '']
-                    else:
+                    if isChinese:
                         value = ' '.join(rt["web"][i]["value"])
                         arg = [query, title, title, '', '']
+                    else:
+                        key = ''.join(rt["web"][i]["key"])
+                        arg = [query, title, key, '', '']
 
                     arg = '$%'.join(arg)
                     wf.add_item(
@@ -328,11 +340,11 @@ def main(wf):
                 valid=True, icon=ICON_ERROR)
 
         elif errorCode == "0":
-            isEnglish = is_English(query)
-            add_translation(query, isEnglish, rt)
-            add_phonetic(query, isEnglish, rt)
-            add_explains(query, isEnglish, rt)
-            add_web_translation(query, isEnglish, rt)
+            isChinese = True if query_language(query) == "Chinese" else False
+            add_translation(query, isChinese, rt)
+            add_phonetic(query, isChinese, rt)
+            add_explains(query, isChinese, rt)
+            add_web_translation(query, isChinese, rt)
 
         else:
             sentry_message(errorCode, '有道也翻译不出来了')
