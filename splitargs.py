@@ -86,8 +86,8 @@ def get_args(wf):
                     escape_quote(pronounce)
                 os.system(bashCommand)
 
-        except Exception as e:
-            return
+    except Exception as e:
+        return
 
 
 if __name__ == '__main__':
