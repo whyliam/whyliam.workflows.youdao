@@ -35,7 +35,7 @@ ERRORCODE_DICT = {
     "106": "不支持的响应类型",
     "107": "不支持的传输加密类型",
     "108": "appKey无效，注册账号， 登录后台创建应用和实例并完成绑定，\
-        可获得应用ID和密钥等信息，其中应用ID就是appKey（ 注意不是应用密钥）",
+        可获得应用ID和密钥等信息，其中应用ID就是appKey（注意不是应用密钥）",
     "109": "batchLog格式不正确",
     "110": "无相关服务的有效实例",
     "111": "开发者账号无效",
@@ -43,7 +43,7 @@ ERRORCODE_DICT = {
     "201": "解密失败，可能为DES,BASE64,URLDecode的错误",
     "202": "签名检验失败",
     "203": "访问IP地址不在可访问IP列表",
-    "205": "请求的接口与应用的平台类型不一致，如有疑问请参考[入门指南]()",
+    "205": "请求的接口与应用的平台类型不一致，如有疑问请参考[入门指南]",
     "206": "因为时间戳无效导致签名校验失败",
     "207": "重放请求",
     "301": "辞典查询失败",
@@ -217,14 +217,14 @@ def get_query_language(query):
     if re.search(ur"[\u4e00-\u9fa5]+", query.decode('utf8')):
         QUERY_LANGUAGE = "zh-CHS2EN"
     # 检查韩语
-    if re.search(ur"[\uAC00-\uD7A3]+", query.decode('utf8')):
+    elif re.search(ur"[\uAC00-\uD7A3]+", query.decode('utf8')):
         QUERY_LANGUAGE = "KO2zh-CHS"
     # 检查日语
-    if re.search(ur"[\u0800-\u4e00]+", query.decode('utf8')):
+    elif re.search(ur"[\u0800-\u4e00]+", query.decode('utf8')):
         QUERY_LANGUAGE = "JA2zh-CHS"
 
 
-def get_arg_str(query, result, pronounce='', operation='',query_language=''):
+def get_arg_str(query, result, pronounce='', operation='', query_language=''):
     if query_language == '':
         query_language = QUERY_LANGUAGE
     arg_array = [str(wf.version), query, result,
@@ -244,7 +244,6 @@ def add_translation(query, rt):
     translations = rt["translation"]
     for title in translations:
         arg = get_arg_str(query, title)
-
         save_history_data(query, title, arg, ICON_DEFAULT)
 
         wf.add_item(
@@ -265,7 +264,8 @@ def add_phonetic(query, rt):
                 title = title if title else "[" + rt["basic"]["phonetic"] + "]"
                 subtitle = '有道发音'
                 data_form, data_to = QUERY_LANGUAGE.split('2')
-                arg = get_arg_str(query, title, pronounce=query, query_language = data_form)
+                arg = get_arg_str(query, title, pronounce=query,
+                                  query_language=data_form)
 
                 wf.add_item(
                     title=title, subtitle=subtitle, arg=arg,
@@ -341,6 +341,7 @@ def main(wf):
         if ERRORCODE_DICT.has_key(errorCode):
             if errorCode == "500":
                 sentry_message(errorCode, ERRORCODE_DICT[errorCode])
+
             arg = get_arg_str('', '', operation='error')
             wf.add_item(
                 title=errorCode + " " + ERRORCODE_DICT[errorCode],
