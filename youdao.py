@@ -62,6 +62,8 @@ ICON_WEB = 'icon_web.png'
 ICON_UPDATE = 'icon_update.png'
 ICON_ERROR = 'icon_error.png'
 
+QUERY_LANGUAGE = 'EN2zh-CHS'
+
 
 def init_sentry():
     # 收集错误信息
@@ -86,7 +88,7 @@ def sentry_message(errorCode, msg):
     if os.getenv('sentry', 'False').strip():
         with sentry_sdk.configure_scope() as scope:
             scope.set_tag("errorCode", errorCode)
-        sentry_sdk.capture_message(msg) 
+        sentry_sdk.capture_message(msg)
 
 
 def get_youdao_url(query):
@@ -142,20 +144,7 @@ def get_youdao_new_url(query, zhiyun_id, zhiyun_key):
     salt = str(uuid.uuid1())
     signStr = zhiyun_id + truncate(query) + salt + curtime + zhiyun_key
     sign = encrypt(signStr)
-
-    language = query_language(query)
-    if language == "Chinese":
-        data_form = 'zh-CHS'
-        data_to = 'en'
-    elif language == "Korean":
-        data_form = 'ko'
-        data_to = 'zh-CHS'
-    elif language == "Japanese":
-        data_form = 'ja'
-        data_to = 'zh-CHS'
-    else:
-        data_form = 'en'
-        data_to = 'zh-CHS'
+    data_form, data_to = QUERY_LANGUAGE.split('2')
 
     url = 'https://openapi.youdao.com/api' + \
         '?appKey=' + str(zhiyun_id) + \
@@ -207,14 +196,12 @@ def get_history_data():
 def is_expired():
     # 检查更新
     if wf.update_available:
-        arg = ['', '', '', '', 'update']
-        arg = '$%'.join(arg)
+        arg = get_arg_str('', '', operation='update')
         wf.add_item(
             title='马上更新', subtitle='有新版本更新', arg=arg,
             valid=True, icon=ICON_UPDATE)
 
-        arg = ['', '', '', '', 'not_update']
-        arg = '$%'.join(arg)
+        arg = get_arg_str('', '', operation='not_update')
         wf.add_item(
             title='暂不更新', subtitle='有新版本更新', arg=arg,
             valid=True, icon=ICON_ERROR)
@@ -223,29 +210,40 @@ def is_expired():
     return False
 
 
-def query_language(query):
+def get_query_language(query):
     import re
+    global QUERY_LANGUAGE
     # 检查中文
-    if re.search(ur"[\u4e00-\u9fa5]+", query):
-        return "Chinese"
+    if re.search(ur"[\u4e00-\u9fa5]+", query.decode('utf8')):
+        QUERY_LANGUAGE = "zh-CHS2EN"
     # 检查韩语
-    if re.search(ur"[\uAC00-\uD7A3]+", query):
-        return "Korean"
+    if re.search(ur"[\uAC00-\uD7A3]+", query.decode('utf8')):
+        QUERY_LANGUAGE = "KO2zh-CHS"
     # 检查日语
-    if re.search(ur"[\u0800-\u4e00]+", query):
-        return "Japanese"
-    return "Default"
+    if re.search(ur"[\u0800-\u4e00]+", query.decode('utf8')):
+        QUERY_LANGUAGE = "JA2zh-CHS"
 
-def add_translation(query, isChinese, rt):
+
+def get_arg_str(query, result, pronounce='', operation='',query_language=''):
+    if query_language == '':
+        query_language = QUERY_LANGUAGE
+    arg_array = [str(wf.version), query, result,
+                 query_language, pronounce, operation]
+    return '$%'.join(arg_array)
+
+
+# def get_l(query, rt):
+#     if u'l' in rt.keys():
+#         if rt["l"] is not None:
+#             QUERY_LANGUAGE = rt["l"]
+
+
+def add_translation(query, rt):
     # 翻译结果
     subtitle = '翻译结果'
     translations = rt["translation"]
     for title in translations:
-        if isChinese:
-            arg = [query, title, title, '', '']
-        else:
-            arg = [query, title, query, '', '']
-        arg = '$%'.join(arg)
+        arg = get_arg_str(query, title)
 
         save_history_data(query, title, arg, ICON_DEFAULT)
 
@@ -254,7 +252,7 @@ def add_translation(query, isChinese, rt):
             valid=True, icon=ICON_DEFAULT)
 
 
-def add_phonetic(query, isChinese, rt):
+def add_phonetic(query, rt):
     # 发音
     if u'basic' in rt.keys():
         if rt["basic"] is not None:
@@ -266,50 +264,60 @@ def add_phonetic(query, isChinese, rt):
                     title += ("[英: " + rt["basic"]["uk-phonetic"] + "] ")
                 title = title if title else "[" + rt["basic"]["phonetic"] + "]"
                 subtitle = '有道发音'
-                if isChinese:
-                    arg = [query, title, '', query, ''] 
-                else:
-                    arg = [query, title, query, '', '']
-                arg = '$%'.join(arg)
+                data_form, data_to = QUERY_LANGUAGE.split('2')
+                arg = get_arg_str(query, title, pronounce=query, query_language = data_form)
+
                 wf.add_item(
                     title=title, subtitle=subtitle, arg=arg,
                     valid=True, icon=ICON_PHONETIC)
 
 
-def add_explains(query, isChinese, rt):
+def add_explains(query, rt):
     # 简明释意
     if u'basic' in rt.keys():
         if rt["basic"] is not None:
             for i in range(len(rt["basic"]["explains"])):
                 title = rt["basic"]["explains"][i]
                 subtitle = '简明释意'
-                if isChinese:
-                    arg = [query, title, '', title, '']
-                else:
-                    arg = [query, title, query, '', '']
-                arg = '$%'.join(arg)
+                arg = get_arg_str(query, title)
+
                 wf.add_item(
                     title=title, subtitle=subtitle, arg=arg,
                     valid=True, icon=ICON_PHONETIC)
 
 
-def add_web_translation(query, isChinese, rt):
+def add_web_translation(query, rt):
   # 网络翻译
     if u'web' in rt.keys():
         if rt["web"] is not None:
             for i in range(len(rt["web"])):
-                titles = rt["web"][i]["value"]
-                for title in titles:
-                    subtitle = '网络翻译: ' + rt["web"][i]["key"]
+                # titles = rt["web"][i]["value"]
+                # for title in titles:
+                #     subtitle = '网络翻译: ' + rt["web"][i]["key"]
 
-                    if isChinese:
-                        value = ' '.join(rt["web"][i]["value"])
-                        arg = [query, title, title, '', '']
+                #     # TO_DO
+                #     if QUERY_LANGUAGE.split('2')[1] == 'EN':
+                #         value = ' '.join(rt["web"][i]["value"])
+                #         arg = get_arg_str(query, title, pronounce=value)
+                #     else:
+                #         key = ''.join(rt["web"][i]["key"])
+                #         arg = get_arg_str(query, title, pronounce=key)
+
+                #     wf.add_item(
+                #         title=title, subtitle=subtitle,
+                #         arg=arg, valid=True, icon=ICON_WEB)
+
+                values = rt["web"][i]["value"]
+                for value in values:
+                    title = value
+                    key = rt["web"][i]["key"]
+                    subtitle = '网络翻译: ' + key
+
+                    if QUERY_LANGUAGE.split('2')[1] == 'EN':
+                        arg = get_arg_str(query, title, pronounce=value)
                     else:
-                        key = ''.join(rt["web"][i]["key"])
-                        arg = [query, title, key, '', '']
+                        arg = get_arg_str(query, title, pronounce=key)
 
-                    arg = '$%'.join(arg)
                     wf.add_item(
                         title=title, subtitle=subtitle,
                         arg=arg, valid=True, icon=ICON_WEB)
@@ -326,32 +334,31 @@ def main(wf):
     if query == "*":
         get_history_data()
     else:
+        get_query_language(query)
         rt = fetch_translation(query)
         errorCode = str(rt.get("errorCode"))
 
         if ERRORCODE_DICT.has_key(errorCode):
             if errorCode == "500":
                 sentry_message(errorCode, ERRORCODE_DICT[errorCode])
-            arg = ['', '', '', '', 'error']
-            arg = '$%'.join(arg)
+            arg = get_arg_str('', '', operation='error')
             wf.add_item(
-                title=errorCode+" "+ERRORCODE_DICT[errorCode],
+                title=errorCode + " " + ERRORCODE_DICT[errorCode],
                 subtitle='', arg=arg,
                 valid=True, icon=ICON_ERROR)
 
         elif errorCode == "0":
-            isChinese = True if query_language(query) == "Chinese" else False
-            add_translation(query, isChinese, rt)
-            add_phonetic(query, isChinese, rt)
-            add_explains(query, isChinese, rt)
-            add_web_translation(query, isChinese, rt)
+            # get_l(query, rt)
+            add_translation(query, rt)
+            add_phonetic(query, rt)
+            add_explains(query, rt)
+            add_web_translation(query, rt)
 
         else:
             sentry_message(errorCode, '有道也翻译不出来了')
             title = '有道也翻译不出来了'
             subtitle = '尝试一下去网站搜索'
-            arg = [query, ' ', ' ', ' ']
-            arg = '$%'.join(arg)
+            arg = get_arg_str(query, '')
             wf.add_item(
                 title=title, subtitle=subtitle, arg=arg,
                 valid=True, icon=ICON_DEFAULT)
