@@ -130,7 +130,7 @@
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
-				<integer>35</integer>
+				<integer>0</integer>
 				<key>script</key>
 				<string>/usr/bin/python splitargs.py "{query}" "search"</string>
 				<key>scriptargtype</key>
@@ -196,12 +196,14 @@
 				<false/>
 				<key>alfredfiltersresultsmatchmode</key>
 				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
 				<key>argumenttrimmode</key>
 				<integer>0</integer>
 				<key>argumenttype</key>
 				<integer>0</integer>
 				<key>escaping</key>
-				<integer>32</integer>
+				<integer>0</integer>
 				<key>keyword</key>
 				<string>yd</string>
 				<key>queuedelaycustom</key>
@@ -234,7 +236,7 @@
 			<key>uid</key>
 			<string>91C343E7-50D8-4B0D-9034-1C16C20DA8D4</string>
 			<key>version</key>
-			<integer>2</integer>
+			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -251,7 +253,7 @@
 			<key>uid</key>
 			<string>DBA62127-3B78-4B80-B82B-1C6AEC393003</string>
 			<key>version</key>
-			<integer>2</integer>
+			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -259,7 +261,7 @@
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
-				<integer>32</integer>
+				<integer>0</integer>
 				<key>script</key>
 				<string>/usr/bin/python splitargs.py "{query}" "copy"</string>
 				<key>scriptargtype</key>
@@ -282,7 +284,7 @@
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
-				<integer>32</integer>
+				<integer>0</integer>
 				<key>script</key>
 				<string>/usr/bin/python splitargs.py "{query}" "copy"</string>
 				<key>scriptargtype</key>
@@ -314,7 +316,7 @@
 			<key>uid</key>
 			<string>0907BEF4-816F-48FF-B157-03F5C2AACEAB</string>
 			<key>version</key>
-			<integer>2</integer>
+			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -353,7 +355,7 @@
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
-				<integer>38</integer>
+				<integer>0</integer>
 				<key>script</key>
 				<string>/usr/bin/python saveword.py "{query}"</string>
 				<key>scriptargtype</key>
