@@ -291,22 +291,6 @@ def add_web_translation(query, rt):
     if u'web' in rt.keys():
         if rt["web"] is not None:
             for i in range(len(rt["web"])):
-                # titles = rt["web"][i]["value"]
-                # for title in titles:
-                #     subtitle = '网络翻译: ' + rt["web"][i]["key"]
-
-                #     # TO_DO
-                #     if QUERY_LANGUAGE.split('2')[1] == 'EN':
-                #         value = ' '.join(rt["web"][i]["value"])
-                #         arg = get_arg_str(query, title, pronounce=value)
-                #     else:
-                #         key = ''.join(rt["web"][i]["key"])
-                #         arg = get_arg_str(query, title, pronounce=key)
-
-                #     wf.add_item(
-                #         title=title, subtitle=subtitle,
-                #         arg=arg, valid=True, icon=ICON_WEB)
-
                 values = rt["web"][i]["value"]
                 for value in values:
                     title = value
