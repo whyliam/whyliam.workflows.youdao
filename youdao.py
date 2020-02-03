@@ -8,6 +8,7 @@ import uuid
 import hashlib
 import time
 import sys
+import random
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -93,8 +94,6 @@ def sentry_message(errorCode, msg):
 
 def get_youdao_url(query):
     # 构建有道翻译URL
-    import random
-
     zhiyun_id = os.getenv('zhiyun_id', '').strip()
     zhiyun_key = os.getenv('zhiyun_key', '').strip()
     if zhiyun_id and zhiyun_key:
@@ -194,17 +193,24 @@ def get_history_data():
 
 
 def is_expired():
-    # 检查更新
-    if wf.update_available:
-        arg = get_arg_str('', '', operation='update')
+    # 检查更新，随机检测
+    if random.random() < 0.01 and wf.update_available:
+        arg = get_arg_str('', '', operation='update_now')
         wf.add_item(
-            title='马上更新', subtitle='有新版本更新', arg=arg,
+            title='马上更新（点击后请打开 Alfred 的 Preference 完成更新）',
+            subtitle='有新版本更新', arg=arg,
             valid=True, icon=ICON_UPDATE)
 
-        arg = get_arg_str('', '', operation='not_update')
+        arg = get_arg_str('', '', operation='update_with_url')
+        wf.add_item(
+            title='手动更新', subtitle='有新版本更新', arg=arg,
+            valid=True, icon=ICON_ERROR)
+
+        arg = get_arg_str('', '', operation='update_next_time')
         wf.add_item(
             title='暂不更新', subtitle='有新版本更新', arg=arg,
             valid=True, icon=ICON_ERROR)
+
         wf.send_feedback()
         return True
     return False

@@ -27,8 +27,16 @@ def get_args(wf):
         operation = arg_array[5]
 
         # 是否有更新
-        if operation == 'update':
+        if operation == 'update_now':
             wf.start_update()
+            return
+        elif operation == 'update_with_url':
+            import webbrowser
+            url = "https://github.com/whyliam/whyliam.workflows.youdao/releases"
+            webbrowser.open(url)
+            return
+        elif operation == 'update_next_time':
+            return
 
         # 是否有错误
         elif operation == 'error':
@@ -91,5 +99,8 @@ def get_args(wf):
 
 
 if __name__ == '__main__':
-    wf = Workflow3()
+    wf = Workflow3(update_settings={
+        'github_slug': 'whyliam/whyliam.workflows.youdao',
+        'frequency': 0
+    })
     sys.exit(wf.run(get_args))
