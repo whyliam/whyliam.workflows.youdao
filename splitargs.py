@@ -8,6 +8,9 @@ sys.setdefaultencoding('utf8')
 
 
 def getargs(wf):
+    def next_time():
+        return True
+
     query = sys.argv[1]
     query = query.split('$%')
     operation = str(sys.argv[2])
@@ -15,6 +18,9 @@ def getargs(wf):
     # 是否有更新
     if query[4] == 'update':
         wf.start_update()
+    elif query[4] == 'not_update':
+        wf.cached_data('not_update', data_func=next_time, max_age=604800)
+
     # 是否有错误
     elif query[4] == 'error':
         import webbrowser

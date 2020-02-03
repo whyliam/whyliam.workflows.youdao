@@ -171,7 +171,7 @@ def get_history_data():
 
 def is_expired():
     # 检查更新
-    if wf.update_available:
+    if not wf.cached_data_fresh("not_update", 604800) and wf.update_available:
         arg = ['', '', '', '', 'update']
         arg = '$%'.join(arg)
         wf.add_item(
