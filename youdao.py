@@ -248,13 +248,14 @@ def add_translation(query, rt):
     # 翻译结果
     subtitle = '翻译结果'
     translations = rt["translation"]
-    for title in translations:
-        arg = get_arg_str(query, title)
-        save_history_data(query, title, arg, ICON_DEFAULT)
+    # for title in translations:
+    title = '\n'.join(translations)
+    arg = get_arg_str(query, title)
+    save_history_data(query, title, arg, ICON_DEFAULT)
 
-        wf.add_item(
-            title=title, subtitle=subtitle, arg=arg,
-            valid=True, icon=ICON_DEFAULT)
+    wf.add_item(
+        title=title, subtitle=subtitle, arg=arg,
+        valid=True, icon=ICON_DEFAULT)
 
 
 def add_phonetic(query, rt):
