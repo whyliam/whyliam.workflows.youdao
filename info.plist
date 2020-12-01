@@ -22,7 +22,7 @@
 				<key>destinationuid</key>
 				<string>13875D49-66D7-4B20-92C6-BC9B0EA4F43E</string>
 				<key>modifiers</key>
-				<integer>8388608</integer>
+				<integer>131072</integer>
 				<key>modifiersubtext</key>
 				<string>有道发音</string>
 				<key>vitoclose</key>
@@ -62,7 +62,7 @@
 				<key>destinationuid</key>
 				<string>F71B91E0-A354-4ABB-B790-7FADD35CEF52</string>
 				<key>modifiers</key>
-				<integer>131072</integer>
+				<integer>8388608</integer>
 				<key>modifiersubtext</key>
 				<string>多行或长句显示</string>
 				<key>vitoclose</key>
@@ -722,7 +722,7 @@ sys.stdout.write(query.split('$%')[2])</string>
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>有道翻译 Workflow v2.2.5
+	<string>有道翻译 Workflow v2.2.6
 
 默认快捷键 yd, 查看翻译结果。
 
@@ -735,12 +735,13 @@ sys.stdout.write(query.split('$%')[2])</string>
 
 功能
 
-1. 按`回车`复制
-2. 按`Control+回车`打开有道翻译页面
-3. 按`Comman+回车`直接在打出翻译结果
-4. 按`Shift+回车`直接发音
-5. 选中文字 双击`Command`进行翻译
-6. `yd *` 显示历史查询记录
+1.按`fn+回车`多行或长句完整显示
+2. 按`回车`复制
+3. 按`Control+回车`打开有道翻译页面
+4. 按`Comman+回车`直接在打出翻译结果
+5. 按`Shift+回车`直接发音
+6. 选中文字 双击`Command`进行翻译
+7. `yd *` 显示历史查询记录
 
 更多
 参见 https://blog.naaln.com/2017/04/alfred-youdao-intro/</string>
@@ -911,7 +912,7 @@ sys.stdout.write(query.split('$%')[2])</string>
 		<string>zhiyun_key</string>
 	</array>
 	<key>version</key>
-	<string>2.2.5</string>
+	<string>2.2.6</string>
 	<key>webaddress</key>
 	<string>https://github.com/whyliam/whyliam.workflows.youdao</string>
 </dict>
