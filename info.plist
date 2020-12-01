@@ -281,7 +281,7 @@
 						<key>matchstring</key>
 						<string>com.runningwithcrayons.Alfred</string>
 						<key>outputlabel</key>
-						<string>from_non_alfred_bar</string>
+						<string>selection not in alfred bar</string>
 						<key>uid</key>
 						<string>B706B6A5-A1AB-4D3A-A22C-4BD4B7B552EC</string>
 					</dict>
@@ -295,7 +295,7 @@
 						<key>matchstring</key>
 						<string>\$%\$%$</string>
 						<key>outputlabel</key>
-						<string>double_trigger_yd_bug</string>
+						<string>retrigger after translating</string>
 						<key>uid</key>
 						<string>B41BF0DD-EE11-4BA9-AAF9-84A35E976D03</string>
 					</dict>
@@ -309,7 +309,7 @@
 						<key>matchstring</key>
 						<string>^yd </string>
 						<key>outputlabel</key>
-						<string>double_trigger_yd_normal</string>
+						<string>retrigger after translating</string>
 						<key>uid</key>
 						<string>E7D2F4BC-4F08-4BF0-AB18-5CB79290396C</string>
 					</dict>
@@ -323,13 +323,13 @@
 						<key>matchstring</key>
 						<string>^$</string>
 						<key>outputlabel</key>
-						<string>double_trigger_yd_empty</string>
+						<string>retrigger before translating</string>
 						<key>uid</key>
 						<string>7A5E655C-5DCA-439D-AF96-7A0F487C7982</string>
 					</dict>
 				</array>
 				<key>elselabel</key>
-				<string>content_from_alfred_bar</string>
+				<string>other selection in alfred bar</string>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.utility.conditional</string>
@@ -863,7 +863,7 @@ sys.stdout.write(query.split('$%')[2])</string>
 		<key>CDA9BE01-DBE2-4EB7-A173-B69DB02231C8</key>
 		<dict>
 			<key>xpos</key>
-			<integer>355</integer>
+			<integer>345</integer>
 			<key>ypos</key>
 			<integer>115</integer>
 		</dict>
