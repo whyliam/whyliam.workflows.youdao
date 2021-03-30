@@ -61,7 +61,7 @@ class SaveWord(object):
         login_data = urllib.urlencode({
             'app': 'web',
             'tp': 'urstoken',
-            'cf': '7',
+            'cf': '3',
             'fr': '1',
             'ru': 'http://dict.youdao.com',
             'product': 'DICT',
@@ -69,7 +69,8 @@ class SaveWord(object):
             'um': 'true',
             'username': self.username,
             'password': self.password,
-            'savelogin': '1',
+            # 'savelogin': '1',
+            'agreePrRule': '1',
         })
         response = self.opener.open(
             'https://logindict.youdao.com/login/acc/login', login_data)
@@ -86,16 +87,19 @@ class SaveWord(object):
     def syncToYoudao(self):
         post_data = urllib.urlencode({
             'word': self.word.get('word'),
-            'phonetic': self.word.get('phonetic'),
-            'desc': self.word.get('trans'),
-            'tags': self.word.get('tags'),
+            #'phonetic': self.word.get('phonetic'),
+            #'desc': self.word.get('trans'),
+            #'tags': self.word.get('tags'),
         })
         self.opener.addheaders = fake_header + [
             ('Referer', 'http://dict.youdao.com/wordbook/wordlist'),
         ]
         response = self.opener.open(
-            'http://dict.youdao.com/wordbook/wordlist?action=add', post_data)
-        return response.headers.get('Location') == 'http://dict.youdao.com/wordbook/wordlist'
+            'http://dict.youdao.com/wordbook/ajax?action=addword&q=%s&le=eng' % (urllib.quote(self.word.get('word'))), post_data)
+
+        content = response.read()
+        # print("syncToYoudao data", content)
+        return '''{"message":"adddone"}''' in content
 
     def generateWordBook(self, source_xml):
         item = self.word
@@ -143,17 +147,13 @@ if __name__ == '__main__':
     result = params[2]
 
     username = os.getenv('username', '').strip()
-    password = os.getenv('password', '').strip()
+    password_md5 = os.getenv('password', '').strip()
     filepath = os.getenv('filepath', '').strip()
     if filepath is None:
         filepath = os.path.join(
             os.environ['HOME'], 'Documents/Alfred-youdao-wordbook.xml')
     else:
         filepath = os.path.expanduser(filepath)
-
-    m2 = hashlib.md5()
-    m2.update(password)
-    password_md5 = m2.hexdigest()
 
     item = {
         "word": query,
@@ -162,7 +162,6 @@ if __name__ == '__main__':
         "tags": "Alfred",
         "progress": "-1",
     }
-
     saver = SaveWord(username, password_md5, filepath, item)
 
     wf = Workflow3()
