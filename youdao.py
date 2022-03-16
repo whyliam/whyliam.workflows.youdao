@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from workflow import Workflow3, web
+from workflow import Workflow3
 import sentry_sdk
 import os
 import json
@@ -9,8 +9,6 @@ import hashlib
 import time
 import sys
 import random
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 YOUDAO_DEFAULT_KEYFROM = ('whyliam-wf-1', 'whyliam-wf-2', 'whyliam-wf-3',
                           'whyliam-wf-4', 'whyliam-wf-5', 'whyliam-wf-6',
@@ -111,9 +109,9 @@ def get_youdao_url(query):
 
 
 def get_youdao_old_url(query, youdao_keyfrom, youdao_key):
-    import urllib
+    import urllib.parse
 
-    query = urllib.quote(str(query))
+    query = urllib.parse.quote(str(query))
     url = 'http://fanyi.youdao.com/openapi.do?' + \
         'keyfrom=' + str(youdao_keyfrom) + \
         '&key=' + str(youdao_key) + \
@@ -135,7 +133,7 @@ def truncate(q):
 
 
 def get_youdao_new_url(query, zhiyun_id, zhiyun_key):
-    import urllib
+    import urllib.parse
     import hashlib
     import uuid
 
@@ -149,7 +147,7 @@ def get_youdao_new_url(query, zhiyun_id, zhiyun_key):
         '?appKey=' + str(zhiyun_id) + \
         '&salt=' + str(salt) + \
         '&sign=' + str(sign) + \
-        '&q=' + urllib.quote(str(query)) + \
+        '&q=' + urllib.parse.quote(str(query)) + \
         '&from=' + data_form + \
         '&to=' + data_to + \
         '&signType=v3' + \
@@ -158,10 +156,13 @@ def get_youdao_new_url(query, zhiyun_id, zhiyun_key):
 
 
 def fetch_translation(query):
+    from urllib import request
+
     # 获取翻译数据
     url = get_youdao_url(query)
     try:
-        rt = web.get(url).json()
+        data = request.urlopen(url).read()
+        rt = json.loads(data)
         return rt
     except:
         rt = {}
@@ -220,13 +221,13 @@ def get_query_language(query):
     import re
     global QUERY_LANGUAGE
     # 检查中文
-    if re.search(ur"[\u4e00-\u9fa5]+", query.decode('utf8')):
+    if re.search(r"[\u4e00-\u9fa5]+", query):
         QUERY_LANGUAGE = "zh-CHS2EN"
     # 检查韩语
-    elif re.search(ur"[\uAC00-\uD7A3]+", query.decode('utf8')):
+    elif re.search(r"[\uAC00-\uD7A3]+", query):
         QUERY_LANGUAGE = "KO2zh-CHS"
     # 检查日语
-    elif re.search(ur"[\u0800-\u4e00]+", query.decode('utf8')):
+    elif re.search(r"[\u0800-\u4e00]+", query):
         QUERY_LANGUAGE = "JA2zh-CHS"
 
 
@@ -318,8 +319,6 @@ def main(wf):
         return
 
     query = wf.args[0].strip()
-    if not isinstance(query, unicode):
-        query = query.decode('utf8')
 
     if query == "*":
         get_history_data()
@@ -328,7 +327,7 @@ def main(wf):
         rt = fetch_translation(query)
         errorCode = str(rt.get("errorCode"))
 
-        if ERRORCODE_DICT.has_key(errorCode):
+        if errorCode in ERRORCODE_DICT:
             if errorCode == "500":
                 sentry_message(errorCode, ERRORCODE_DICT[errorCode])
 
@@ -357,9 +356,6 @@ def main(wf):
 
 
 if __name__ == '__main__':
-    wf = Workflow3(update_settings={
-        'github_slug': 'whyliam/whyliam.workflows.youdao',
-        'frequency': 7
-    })
-    init_sentry()
+    wf = Workflow3()
+    # init_sentry()
     sys.exit(wf.run(main))

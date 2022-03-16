@@ -4,20 +4,17 @@ import os
 import re
 import json
 import cookielib
-import urllib2
+from urllib.request import HTTPRedirectHandler, HTTPHandler, HTTPSHandler, HTTPCookieProcessor, build_opener
 import urllib
 import hashlib
 import logging
 
 from workflow import Workflow3
 
-reload(sys)
-sys.setdefaultencoding('utf8')
 
-
-class SmartRedirectHandler(urllib2.HTTPRedirectHandler):
+class SmartRedirectHandler(HTTPRedirectHandler):
     def http_error_302(self, req, fp, code, msg, headers):
-        result = urllib2.HTTPRedirectHandler.http_error_302(
+        result = HTTPRedirectHandler.http_error_302(
             self, req, fp, code, msg, headers)
         result.status = code
         result.headers = headers
@@ -46,11 +43,11 @@ class SaveWord(object):
         if os.access(cookie_filename, os.F_OK):
             self.cj.load(cookie_filename, ignore_discard=True,
                          ignore_expires=True)
-        self.opener = urllib2.build_opener(
+        self.opener = build_opener(
             SmartRedirectHandler(),
-            urllib2.HTTPHandler(debuglevel=0),
-            urllib2.HTTPSHandler(debuglevel=0),
-            urllib2.HTTPCookieProcessor(self.cj)
+            HTTPHandler(debuglevel=0),
+            HTTPSHandler(debuglevel=0),
+            HTTPCookieProcessor(self.cj)
         )
         self.opener.addheaders = fake_header
 

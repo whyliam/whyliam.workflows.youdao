@@ -5,9 +5,6 @@ import ssl
 import re
 from workflow import Workflow3
 
-reload(sys)
-sys.setdefaultencoding('utf8')
-
 
 def escape_quote(result):
     return result.replace("\'", "\\\'").replace("\"", "\\\"")
