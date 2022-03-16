@@ -21,24 +21,27 @@
 
 """
 
-from __future__ import print_function, unicode_literals
 
-from collections import defaultdict
-from functools import total_ordering
 import json
 import os
-import tempfile
 import re
 import subprocess
+import tempfile
+from collections import defaultdict
+from functools import total_ordering
+from itertools import zip_longest
 
-import workflow
-import web
+import requests
+
+from workflow.util import atomic_writer
+
+from . import workflow
 
 # __all__ = []
 
 
-RELEASES_BASE = 'https://api.github.com/repos/{}/releases'
-match_workflow = re.compile(r'\.alfred(\d+)?workflow$').search
+RELEASES_BASE = "https://api.github.com/repos/{}/releases"
+match_workflow = re.compile(r"\.alfred(\d+)?workflow$").search
 
 _wf = None
 
@@ -70,9 +73,12 @@ class Download(object):
     @classmethod
     def from_dict(cls, d):
         """Create a `Download` from a `dict`."""
-        return cls(url=d['url'], filename=d['filename'],
-                   version=Version(d['version']),
-                   prerelease=d['prerelease'])
+        return cls(
+            url=d["url"],
+            filename=d["filename"],
+            version=Version(d["version"]),
+            prerelease=d["prerelease"],
+        )
 
     @classmethod
     def from_releases(cls, js):
@@ -95,34 +101,35 @@ class Download(object):
         releases = json.loads(js)
         downloads = []
         for release in releases:
-            tag = release['tag_name']
+            tag = release["tag_name"]
             dupes = defaultdict(int)
             try:
                 version = Version(tag)
             except ValueError as err:
-                wf().logger.debug('ignored release: bad version "%s": %s',
-                                  tag, err)
+                wf().logger.debug('ignored release: bad version "%s": %s', tag, err)
                 continue
 
             dls = []
-            for asset in release.get('assets', []):
-                url = asset.get('browser_download_url')
+            for asset in release.get("assets", []):
+                url = asset.get("browser_download_url")
                 filename = os.path.basename(url)
                 m = match_workflow(filename)
                 if not m:
-                    wf().logger.debug('unwanted file: %s', filename)
+                    wf().logger.debug("unwanted file: %s", filename)
                     continue
 
                 ext = m.group(0)
                 dupes[ext] = dupes[ext] + 1
-                dls.append(Download(url, filename, version,
-                                    release['prerelease']))
+                dls.append(Download(url, filename, version, release["prerelease"]))
 
             valid = True
-            for ext, n in dupes.items():
+            for ext, n in list(dupes.items()):
                 if n > 1:
-                    wf().logger.debug('ignored release "%s": multiple assets '
-                                      'with extension "%s"', tag, ext)
+                    wf().logger.debug(
+                        'ignored release "%s": multiple assets ' 'with extension "%s"',
+                        tag,
+                        ext,
+                    )
                     valid = False
                     break
 
@@ -143,7 +150,7 @@ class Download(object):
                 pre-release. Defaults to False.
 
         """
-        if isinstance(version, basestring):
+        if isinstance(version, str):
             version = Version(version)
 
         self.url = url
@@ -156,23 +163,29 @@ class Download(object):
         """Minimum Alfred version based on filename extension."""
         m = match_workflow(self.filename)
         if not m or not m.group(1):
-            return Version('0')
+            return Version("0")
         return Version(m.group(1))
 
     @property
     def dict(self):
         """Convert `Download` to `dict`."""
-        return dict(url=self.url, filename=self.filename,
-                    version=str(self.version), prerelease=self.prerelease)
+        return dict(
+            url=self.url,
+            filename=self.filename,
+            version=str(self.version),
+            prerelease=self.prerelease,
+        )
 
     def __str__(self):
         """Format `Download` for printing."""
-        u = ('Download(url={dl.url!r}, '
-             'filename={dl.filename!r}, '
-             'version={dl.version!r}, '
-             'prerelease={dl.prerelease!r})'.format(dl=self))
-
-        return u.encode('utf-8')
+        return (
+            "Download("
+            "url={dl.url!r}, "
+            "filename={dl.filename!r}, "
+            "version={dl.version!r}, "
+            "prerelease={dl.prerelease!r}"
+            ")"
+        ).format(dl=self)
 
     def __repr__(self):
         """Code-like representation of `Download`."""
@@ -180,10 +193,12 @@ class Download(object):
 
     def __eq__(self, other):
         """Compare Downloads based on version numbers."""
-        if self.url != other.url \
-                or self.filename != other.filename \
-                or self.version != other.version \
-                or self.prerelease != other.prerelease:
+        if (
+            self.url != other.url
+            or self.filename != other.filename
+            or self.version != other.version
+            or self.prerelease != other.prerelease
+        ):
             return False
         return True
 
@@ -222,7 +237,7 @@ class Version(object):
     """
 
     #: Match version and pre-release/build information in version strings
-    match_version = re.compile(r'([0-9][0-9\.]*)(.+)?').match
+    match_version = re.compile(r"([0-9][0-9\.]*)(.+)?").match
 
     def __init__(self, vstr):
         """Create new `Version` object.
@@ -231,23 +246,24 @@ class Version(object):
             vstr (basestring): Semantic version string.
         """
         if not vstr:
-            raise ValueError('invalid version number: {!r}'.format(vstr))
+            raise ValueError("invalid version number: {!r}".format(vstr))
 
         self.vstr = vstr
         self.major = 0
         self.minor = 0
         self.patch = 0
-        self.suffix = ''
-        self.build = ''
+        self.suffix = ""
+        self.build = ""
         self._parse(vstr)
 
     def _parse(self, vstr):
-        if vstr.startswith('v'):
+        vstr = str(vstr)
+        if vstr.startswith("v"):
             m = self.match_version(vstr[1:])
         else:
             m = self.match_version(vstr)
         if not m:
-            raise ValueError('invalid version number: ' + vstr)
+            raise ValueError("invalid version number: " + vstr)
 
         version, suffix = m.groups()
         parts = self._parse_dotted_string(version)
@@ -257,24 +273,23 @@ class Version(object):
         if len(parts):
             self.patch = parts.pop(0)
         if not len(parts) == 0:
-            raise ValueError('version number too long: ' + vstr)
+            raise ValueError("version number too long: " + vstr)
 
         if suffix:
             # Build info
-            idx = suffix.find('+')
+            idx = suffix.find("+")
             if idx > -1:
-                self.build = suffix[idx+1:]
+                self.build = suffix[idx + 1 :]
                 suffix = suffix[:idx]
             if suffix:
-                if not suffix.startswith('-'):
-                    raise ValueError(
-                        'suffix must start with - : ' + suffix)
+                if not suffix.startswith("-"):
+                    raise ValueError("suffix must start with - : " + suffix)
                 self.suffix = suffix[1:]
 
     def _parse_dotted_string(self, s):
         """Parse string ``s`` into list of ints and strings."""
         parsed = []
-        parts = s.split('.')
+        parts = s.split(".")
         for p in parts:
             if p.isdigit():
                 p = int(p)
@@ -289,7 +304,7 @@ class Version(object):
     def __lt__(self, other):
         """Implement comparison."""
         if not isinstance(other, Version):
-            raise ValueError('not a Version instance: {0!r}'.format(other))
+            raise ValueError("not a Version instance: {0!r}".format(other))
         t = self.tuple[:3]
         o = other.tuple[:3]
         if t < o:
@@ -299,15 +314,27 @@ class Version(object):
                 return True
             if other.suffix and not self.suffix:
                 return False
-            return self._parse_dotted_string(self.suffix) \
-                < self._parse_dotted_string(other.suffix)
+
+            self_suffix = self._parse_dotted_string(self.suffix)
+            other_suffix = self._parse_dotted_string(other.suffix)
+
+            for s, o in zip_longest(self_suffix, other_suffix):
+                if s is None:  # shorter value wins
+                    return True
+                elif o is None:  # longer value loses
+                    return False
+                elif type(s) != type(o):  # type coersion
+                    s, o = str(s), str(o)
+                if s == o:  # next if the same compare
+                    continue
+                return s < o  # finally compare
         # t > o
         return False
 
     def __eq__(self, other):
         """Implement comparison."""
         if not isinstance(other, Version):
-            raise ValueError('not a Version instance: {0!r}'.format(other))
+            raise ValueError("not a Version instance: {0!r}".format(other))
         return self.tuple == other.tuple
 
     def __ne__(self, other):
@@ -317,13 +344,13 @@ class Version(object):
     def __gt__(self, other):
         """Implement comparison."""
         if not isinstance(other, Version):
-            raise ValueError('not a Version instance: {0!r}'.format(other))
+            raise ValueError("not a Version instance: {0!r}".format(other))
         return other.__lt__(self)
 
     def __le__(self, other):
         """Implement comparison."""
         if not isinstance(other, Version):
-            raise ValueError('not a Version instance: {0!r}'.format(other))
+            raise ValueError("not a Version instance: {0!r}".format(other))
         return not other.__lt__(self)
 
     def __ge__(self, other):
@@ -332,11 +359,11 @@ class Version(object):
 
     def __str__(self):
         """Return semantic version string."""
-        vstr = '{0}.{1}.{2}'.format(self.major, self.minor, self.patch)
+        vstr = "{0}.{1}.{2}".format(self.major, self.minor, self.patch)
         if self.suffix:
-            vstr = '{0}-{1}'.format(vstr, self.suffix)
+            vstr = "{0}-{1}".format(vstr, self.suffix)
         if self.build:
-            vstr = '{0}+{1}'.format(vstr, self.build)
+            vstr = "{0}+{1}".format(vstr, self.build)
         return vstr
 
     def __repr__(self):
@@ -357,16 +384,16 @@ def retrieve_download(dl):
 
     """
     if not match_workflow(dl.filename):
-        raise ValueError('attachment not a workflow: ' + dl.filename)
+        raise ValueError("attachment not a workflow: " + dl.filename)
 
     path = os.path.join(tempfile.gettempdir(), dl.filename)
-    wf().logger.debug('downloading update from '
-                      '%r to %r ...', dl.url, path)
+    wf().logger.debug("downloading update from " "%r to %r ...", dl.url, path)
 
-    r = web.get(dl.url)
+    r = requests.get(dl.url)
     r.raise_for_status()
 
-    r.save_to_path(path)
+    with atomic_writer(path, "wb") as file_obj:
+        file_obj.write(r.content)
 
     return path
 
@@ -381,8 +408,8 @@ def build_api_url(repo):
         unicode: URL to the API endpoint for the repo's releases
 
     """
-    if len(repo.split('/')) != 2:
-        raise ValueError('invalid GitHub repo: {!r}'.format(repo))
+    if len(repo.split("/")) != 2:
+        raise ValueError("invalid GitHub repo: {!r}".format(repo))
 
     return RELEASES_BASE.format(repo)
 
@@ -401,12 +428,12 @@ def get_downloads(repo):
     url = build_api_url(repo)
 
     def _fetch():
-        wf().logger.info('retrieving releases for %r ...', repo)
-        r = web.get(url)
+        wf().logger.info("retrieving releases for %r ...", repo)
+        r = requests.get(url)
         r.raise_for_status()
         return r.content
 
-    key = 'github-releases-' + repo.replace('/', '-')
+    key = "github-releases-" + repo.replace("/", "-")
     js = wf().cached_data(key, _fetch, max_age=60)
 
     return Download.from_releases(js)
@@ -414,7 +441,7 @@ def get_downloads(repo):
 
 def latest_download(dls, alfred_version=None, prereleases=False):
     """Return newest `Download`."""
-    alfred_version = alfred_version or os.getenv('alfred_version')
+    alfred_version = alfred_version or os.getenv("alfred_version")
     version = None
     if alfred_version:
         version = Version(alfred_version)
@@ -422,21 +449,24 @@ def latest_download(dls, alfred_version=None, prereleases=False):
     dls.sort(reverse=True)
     for dl in dls:
         if dl.prerelease and not prereleases:
-            wf().logger.debug('ignored prerelease: %s', dl.version)
+            wf().logger.debug("ignored prerelease: %s", dl.version)
             continue
         if version and dl.alfred_version > version:
-            wf().logger.debug('ignored incompatible (%s > %s): %s',
-                              dl.alfred_version, version, dl.filename)
+            wf().logger.debug(
+                "ignored incompatible (%s > %s): %s",
+                dl.alfred_version,
+                version,
+                dl.filename,
+            )
             continue
 
-        wf().logger.debug('latest version: %s (%s)', dl.version, dl.filename)
+        wf().logger.debug("latest version: %s (%s)", dl.version, dl.filename)
         return dl
 
     return None
 
 
-def check_update(repo, current_version, prereleases=False,
-                 alfred_version=None):
+def check_update(repo, current_version, prereleases=False, alfred_version=None):
     """Check whether a newer release is available on GitHub.
 
     Args:
@@ -454,38 +484,32 @@ def check_update(repo, current_version, prereleases=False,
     be cached.
 
     """
-    key = '__workflow_latest_version'
+    key = "__workflow_latest_version"
     # data stored when no update is available
-    no_update = {
-        'available': False,
-        'download': None,
-        'version': None,
-    }
+    no_update = {"available": False, "download": None, "version": None}
     current = Version(current_version)
 
     dls = get_downloads(repo)
     if not len(dls):
-        wf().logger.warning('no valid downloads for %s', repo)
+        wf().logger.warning("no valid downloads for %s", repo)
         wf().cache_data(key, no_update)
         return False
 
-    wf().logger.info('%d download(s) for %s', len(dls), repo)
+    wf().logger.info("%d download(s) for %s", len(dls), repo)
 
     dl = latest_download(dls, alfred_version, prereleases)
 
     if not dl:
-        wf().logger.warning('no compatible downloads for %s', repo)
+        wf().logger.warning("no compatible downloads for %s", repo)
         wf().cache_data(key, no_update)
         return False
 
-    wf().logger.debug('latest=%r, installed=%r', dl.version, current)
+    wf().logger.debug("latest=%r, installed=%r", dl.version, current)
 
     if dl.version > current:
-        wf().cache_data(key, {
-            'version': str(dl.version),
-            'download': dl.dict,
-            'available': True,
-        })
+        wf().cache_data(
+            key, {"version": str(dl.version), "download": dl.dict, "available": True}
+        )
         return True
 
     wf().cache_data(key, no_update)
@@ -498,50 +522,45 @@ def install_update():
     :returns: ``True`` if an update is installed, else ``False``
 
     """
-    key = '__workflow_latest_version'
+    key = "__workflow_latest_version"
     # data stored when no update is available
-    no_update = {
-        'available': False,
-        'download': None,
-        'version': None,
-    }
+    no_update = {"available": False, "download": None, "version": None}
     status = wf().cached_data(key, max_age=0)
 
-    if not status or not status.get('available'):
-        wf().logger.info('no update available')
+    if not status or not status.get("available"):
+        wf().logger.info("no update available")
         return False
 
-    dl = status.get('download')
+    dl = status.get("download")
     if not dl:
-        wf().logger.info('no download information')
+        wf().logger.info("no download information")
         return False
 
     path = retrieve_download(Download.from_dict(dl))
 
-    wf().logger.info('installing updated workflow ...')
-    subprocess.call(['open', path])
+    wf().logger.info("installing updated workflow ...")
+    subprocess.call(["open", path])  # nosec
 
     wf().cache_data(key, no_update)
     return True
 
 
-if __name__ == '__main__':  # pragma: nocover
+if __name__ == "__main__":  # pragma: nocover
     import sys
 
     prereleases = False
 
     def show_help(status=0):
         """Print help message."""
-        print('usage: update.py (check|install) '
-              '[--prereleases] <repo> <version>')
+        print("usage: update.py (check|install) " "[--prereleases] <repo> <version>")
         sys.exit(status)
 
     argv = sys.argv[:]
-    if '-h' in argv or '--help' in argv:
+    if "-h" in argv or "--help" in argv:
         show_help()
 
-    if '--prereleases' in argv:
-        argv.remove('--prereleases')
+    if "--prereleases" in argv:
+        argv.remove("--prereleases")
         prereleases = True
 
     if len(argv) != 4:
@@ -553,9 +572,9 @@ if __name__ == '__main__':  # pragma: nocover
 
     try:
 
-        if action == 'check':
+        if action == "check":
             check_update(repo, version, prereleases)
-        elif action == 'install':
+        elif action == "install":
             install_update()
         else:
             show_help(1)
