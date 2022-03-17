@@ -3,7 +3,7 @@ import sys
 import os
 import re
 import json
-import cookielib
+import http.cookiejar
 from urllib.request import HTTPRedirectHandler, HTTPHandler, HTTPSHandler, HTTPCookieProcessor, build_opener
 import urllib
 import hashlib
@@ -39,7 +39,7 @@ class SaveWord(object):
         self.password = password
         self.localfile = localfile
         self.word = word
-        self.cj = cookielib.LWPCookieJar(cookie_filename)
+        self.cj = http.cookiejar.LWPCookieJar(cookie_filename)
         if os.access(cookie_filename, os.F_OK):
             self.cj.load(cookie_filename, ignore_discard=True,
                          ignore_expires=True)
