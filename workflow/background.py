@@ -96,9 +96,7 @@ def _job_pid(name):
 
     with open(pidfile, "rb") as fp:
         read = fp.read()
-        print(str(read))
         pid = int.from_bytes(read, sys.byteorder)
-        print(pid)
 
         if _process_exists(pid):
             return pid
@@ -235,7 +233,7 @@ def run_in_background(name, args, **kwargs):
     # Call this script
     cmd = [sys.executable, "-m", "workflow.background", name]
     _log().debug("[%s] passing job to background runner: %r", name, cmd)
-    retcode = subprocess.call(cmd, env={"PYTHONPATH": ":".join(sys.path)})
+    retcode = subprocess.call(cmd)
 
     if retcode:  # pragma: no cover
         _log().error("[%s] background runner failed with %d", name, retcode)

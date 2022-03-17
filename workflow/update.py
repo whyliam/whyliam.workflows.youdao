@@ -30,8 +30,7 @@ import tempfile
 from collections import defaultdict
 from functools import total_ordering
 from itertools import zip_longest
-
-import requests
+from urllib import request
 
 from workflow.util import atomic_writer
 
@@ -389,11 +388,10 @@ def retrieve_download(dl):
     path = os.path.join(tempfile.gettempdir(), dl.filename)
     wf().logger.debug("downloading update from " "%r to %r ...", dl.url, path)
 
-    r = requests.get(dl.url)
-    r.raise_for_status()
+    r = request.urlopen(dl.url)
 
     with atomic_writer(path, "wb") as file_obj:
-        file_obj.write(r.content)
+        file_obj.write(r.read())
 
     return path
 
@@ -429,9 +427,8 @@ def get_downloads(repo):
 
     def _fetch():
         wf().logger.info("retrieving releases for %r ...", repo)
-        r = requests.get(url)
-        r.raise_for_status()
-        return r.content
+        r = request.urlopen(url)
+        return r.read()
 
     key = "github-releases-" + repo.replace("/", "-")
     js = wf().cached_data(key, _fetch, max_age=60)

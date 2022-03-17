@@ -356,6 +356,9 @@ def main(wf):
 
 
 if __name__ == '__main__':
-    wf = Workflow3()
-    # init_sentry()
+    wf = Workflow3(update_settings={
+        'github_slug': 'whyliam/whyliam.workflows.youdao',
+        'frequency': 7
+    })
+    init_sentry()
     sys.exit(wf.run(main))
