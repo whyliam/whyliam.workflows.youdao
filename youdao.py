@@ -360,5 +360,5 @@ if __name__ == '__main__':
         'github_slug': 'whyliam/whyliam.workflows.youdao',
         'frequency': 7
     })
-    init_sentry()
+    # init_sentry()
     sys.exit(wf.run(main))
