@@ -76,10 +76,10 @@ def init_sentry():
 
 
 def get_user_id():
-    user_id = wf.stored_data('user_id')
+    user_id = wf.stored_data('user__id')
     if user_id == None:
         user_id = str(uuid.uuid1())
-    wf.store_data('user_id', user_id)
+    wf.store_data('user__id', user_id)
     return user_id
 
 
@@ -360,5 +360,5 @@ if __name__ == '__main__':
         'github_slug': 'whyliam/whyliam.workflows.youdao',
         'frequency': 7
     })
-    # init_sentry()
+    init_sentry()
     sys.exit(wf.run(main))
