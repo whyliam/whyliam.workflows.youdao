@@ -5,7 +5,7 @@ import re
 import json
 import http.cookiejar
 from urllib.request import HTTPRedirectHandler, HTTPHandler, HTTPSHandler, HTTPCookieProcessor, build_opener
-import urllib
+import urllib.parse
 import hashlib
 import logging
 
@@ -55,7 +55,7 @@ class SaveWord(object):
         self.cj.clear()
         first_page = self.opener.open(
             'https://account.youdao.com/login?back_url=http://dict.youdao.com&service=dict')
-        login_data = urllib.urlencode({
+        login_data = urllib.parse.urlencode({
             'app': 'web',
             'tp': 'urstoken',
             'cf': '7',
@@ -67,7 +67,7 @@ class SaveWord(object):
             'username': self.username,
             'password': self.password,
             'savelogin': '1',
-        })
+        }).encode("utf-8")
         response = self.opener.open(
             'https://logindict.youdao.com/login/acc/login', login_data)
         if response.headers.get('Set-Cookie') != None:
@@ -81,12 +81,12 @@ class SaveWord(object):
             return False
 
     def syncToYoudao(self):
-        post_data = urllib.urlencode({
+        post_data = urllib.parse.urlencode({
             'word': self.word.get('word'),
             'phonetic': self.word.get('phonetic'),
             'desc': self.word.get('trans'),
             'tags': self.word.get('tags'),
-        })
+        }).encode("utf-8")
         self.opener.addheaders = fake_header + [
             ('Referer', 'http://dict.youdao.com/wordbook/wordlist'),
         ]
@@ -121,7 +121,7 @@ class SaveWord(object):
             f = open(self.localfile, 'w')
             f.write(self.generateWordBook(source_xml))
             f.close()
-        except Exception, e:
+        except Exception as e:
             return e
         return 0
 
@@ -148,9 +148,7 @@ if __name__ == '__main__':
     else:
         filepath = os.path.expanduser(filepath)
 
-    m2 = hashlib.md5()
-    m2.update(password)
-    password_md5 = m2.hexdigest()
+    password_md5 = hashlib.md5(password.encode("utf-8")).hexdigest()
 
     item = {
         "word": query,
