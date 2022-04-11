@@ -1,6 +1,6 @@
 # whyliam.workflows.youdao
 
-## 有道翻译 workflow v2.2.5
+## 有道翻译 workflow v3.0.0
 
 默认快捷键 `yd`，查看翻译结果。
 
@@ -24,9 +24,14 @@
 
 ### 下载
 
-[Alfred 3 版本](https://github.com/whyliam/whyliam.workflows.youdao/releases/download/2.2.5/whyliam.workflows.youdao.alfred3workflow)
+#### Python 3 版本
 
-[Alfred 4 版本](https://github.com/whyliam/whyliam.workflows.youdao/releases/download/2.2.5/whyliam.workflows.youdao.alfredworkflow)
+[Python 3 版本](https://github.com/whyliam/whyliam.workflows.youdao/releases/download/3.0.0/whyliam.workflows.youdao.alfredworkflow) - 感谢 [Pid](https://github.com/zhugexiaobo)
+
+#### Python 2 版本
+`macOS 12.3` 以下的用户请使用以下版本
+
+[Python 2  版本](https://github.com/whyliam/whyliam.workflows.youdao/releases/download/2.2.5/whyliam.workflows.youdao.alfredworkflow)
 
 ### 安装
 
@@ -99,7 +104,7 @@
 
 ### 问题说明
 
-1 . **macOS** catalina  需要在 系统设置-安全性与隐私-辅助功能，重新授权`Alfred 4`权限。
+1 . **macOS** Catalina  需要在 系统设置-安全性与隐私-辅助功能，重新授权`Alfred 4`权限。
 
 ### 更多
 
