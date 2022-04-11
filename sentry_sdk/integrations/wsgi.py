@@ -1,6 +1,6 @@
-import functools
 import sys
 
+from sentry_sdk._functools import partial
 from sentry_sdk.hub import Hub, _should_send_default_pii
 from sentry_sdk.utils import (
     ContextVar,
@@ -8,7 +8,8 @@ from sentry_sdk.utils import (
     event_from_exception,
 )
 from sentry_sdk._compat import PY2, reraise, iteritems
-from sentry_sdk.tracing import Span
+from sentry_sdk.tracing import Transaction
+from sentry_sdk.sessions import auto_session_tracking
 from sentry_sdk.integrations._wsgi_common import _filter_headers
 
 from sentry_sdk._types import MYPY
@@ -21,13 +22,19 @@ if MYPY:
     from typing import Tuple
     from typing import Optional
     from typing import TypeVar
+    from typing import Protocol
 
     from sentry_sdk.utils import ExcInfo
     from sentry_sdk._types import EventProcessor
 
-    T = TypeVar("T")
-    U = TypeVar("U")
-    E = TypeVar("E")
+    WsgiResponseIter = TypeVar("WsgiResponseIter")
+    WsgiResponseHeaders = TypeVar("WsgiResponseHeaders")
+    WsgiExcInfo = TypeVar("WsgiExcInfo")
+
+    class StartResponse(Protocol):
+        def __call__(self, status, response_headers, exc_info=None):
+            # type: (str, WsgiResponseHeaders, Optional[WsgiExcInfo]) -> WsgiResponseIter
+            pass
 
 
 _wsgi_middleware_applied = ContextVar("sentry_wsgi_middleware_applied")
@@ -47,10 +54,16 @@ else:
         return s.encode("latin1").decode(charset, errors)
 
 
-def get_host(environ):
-    # type: (Dict[str, str]) -> str
+def get_host(environ, use_x_forwarded_for=False):
+    # type: (Dict[str, str], bool) -> str
     """Return the host for the given WSGI environment. Yanked from Werkzeug."""
-    if environ.get("HTTP_HOST"):
+    if use_x_forwarded_for and "HTTP_X_FORWARDED_HOST" in environ:
+        rv = environ["HTTP_X_FORWARDED_HOST"]
+        if environ["wsgi.url_scheme"] == "http" and rv.endswith(":80"):
+            rv = rv[:-3]
+        elif environ["wsgi.url_scheme"] == "https" and rv.endswith(":443"):
+            rv = rv[:-4]
+    elif environ.get("HTTP_HOST"):
         rv = environ["HTTP_HOST"]
         if environ["wsgi.url_scheme"] == "http" and rv.endswith(":80"):
             rv = rv[:-3]
@@ -70,23 +83,24 @@ def get_host(environ):
     return rv
 
 
-def get_request_url(environ):
-    # type: (Dict[str, str]) -> str
+def get_request_url(environ, use_x_forwarded_for=False):
+    # type: (Dict[str, str], bool) -> str
     """Return the absolute URL without query string for the given WSGI
     environment."""
     return "%s://%s/%s" % (
         environ.get("wsgi.url_scheme"),
-        get_host(environ),
+        get_host(environ, use_x_forwarded_for),
         wsgi_decoding_dance(environ.get("PATH_INFO") or "").lstrip("/"),
     )
 
 
 class SentryWsgiMiddleware(object):
-    __slots__ = ("app",)
+    __slots__ = ("app", "use_x_forwarded_for")
 
-    def __init__(self, app):
-        # type: (Callable[[Dict[str, str], Callable[..., Any]], Any]) -> None
+    def __init__(self, app, use_x_forwarded_for=False):
+        # type: (Callable[[Dict[str, str], Callable[..., Any]], Any], bool) -> None
         self.app = app
+        self.use_x_forwarded_for = use_x_forwarded_for
 
     def __call__(self, environ, start_response):
         # type: (Dict[str, str], Callable[..., Any]) -> _ScopedResponse
@@ -96,28 +110,34 @@ class SentryWsgiMiddleware(object):
         _wsgi_middleware_applied.set(True)
         try:
             hub = Hub(Hub.current)
+            with auto_session_tracking(hub, session_mode="request"):
+                with hub:
+                    with capture_internal_exceptions():
+                        with hub.configure_scope() as scope:
+                            scope.clear_breadcrumbs()
+                            scope._name = "wsgi"
+                            scope.add_event_processor(
+                                _make_wsgi_event_processor(
+                                    environ, self.use_x_forwarded_for
+                                )
+                            )
 
-            with hub:
-                with capture_internal_exceptions():
-                    with hub.configure_scope() as scope:
-                        scope.clear_breadcrumbs()
-                        scope._name = "wsgi"
-                        scope.add_event_processor(_make_wsgi_event_processor(environ))
+                    transaction = Transaction.continue_from_environ(
+                        environ, op="http.server", name="generic WSGI request"
+                    )
 
-                span = Span.continue_from_environ(environ)
-                span.op = "http.server"
-                span.transaction = "generic WSGI request"
-
-                with hub.start_span(span) as span:
-                    try:
-                        rv = self.app(
-                            environ,
-                            functools.partial(
-                                _sentry_start_response, start_response, span
-                            ),
-                        )
-                    except BaseException:
-                        reraise(*_capture_exception(hub))
+                    with hub.start_transaction(
+                        transaction, custom_sampling_context={"wsgi_environ": environ}
+                    ):
+                        try:
+                            rv = self.app(
+                                environ,
+                                partial(
+                                    _sentry_start_response, start_response, transaction
+                                ),
+                            )
+                        except BaseException:
+                            reraise(*_capture_exception(hub))
         finally:
             _wsgi_middleware_applied.set(False)
 
@@ -125,20 +145,31 @@ class SentryWsgiMiddleware(object):
 
 
 def _sentry_start_response(
-    old_start_response, span, status, response_headers, exc_info=None
+    old_start_response,  # type: StartResponse
+    transaction,  # type: Transaction
+    status,  # type: str
+    response_headers,  # type: WsgiResponseHeaders
+    exc_info=None,  # type: Optional[WsgiExcInfo]
 ):
-    # type: (Callable[[str, U, Optional[E]], T], Span, str, U, Optional[E]) -> T
+    # type: (...) -> WsgiResponseIter
     with capture_internal_exceptions():
         status_int = int(status.split(" ", 1)[0])
-        span.set_http_status(status_int)
+        transaction.set_http_status(status_int)
 
-    return old_start_response(status, response_headers, exc_info)
+    if exc_info is None:
+        # The Django Rest Framework WSGI test client, and likely other
+        # (incorrect) implementations, cannot deal with the exc_info argument
+        # if one is present. Avoid providing a third argument if not necessary.
+        return old_start_response(status, response_headers)
+    else:
+        return old_start_response(status, response_headers, exc_info)
 
 
 def _get_environ(environ):
     # type: (Dict[str, str]) -> Iterator[Tuple[str, str]]
     """
-    Returns our whitelisted environment variables.
+    Returns our explicitly included environment variables we want to
+    capture (server name, port and remote addr if pii is enabled).
     """
     keys = ["SERVER_NAME", "SERVER_PORT"]
     if _should_send_default_pii():
@@ -247,8 +278,8 @@ class _ScopedResponse(object):
                 reraise(*_capture_exception(self._hub))
 
 
-def _make_wsgi_event_processor(environ):
-    # type: (Dict[str, str]) -> EventProcessor
+def _make_wsgi_event_processor(environ, use_x_forwarded_for):
+    # type: (Dict[str, str], bool) -> EventProcessor
     # It's a bit unfortunate that we have to extract and parse the request data
     # from the environ so eagerly, but there are a few good reasons for this.
     #
@@ -262,7 +293,7 @@ def _make_wsgi_event_processor(environ):
     # https://github.com/unbit/uwsgi/issues/1950
 
     client_ip = get_client_ip(environ)
-    request_url = get_request_url(environ)
+    request_url = get_request_url(environ, use_x_forwarded_for)
     query_string = environ.get("QUERY_STRING")
     method = environ.get("REQUEST_METHOD")
     env = dict(_get_environ(environ))
@@ -277,7 +308,7 @@ def _make_wsgi_event_processor(environ):
             if _should_send_default_pii():
                 user_info = event.setdefault("user", {})
                 if client_ip:
-                    user_info["ip_address"] = client_ip
+                    user_info.setdefault("ip_address", client_ip)
 
             request_info["url"] = request_url
             request_info["query_string"] = query_string

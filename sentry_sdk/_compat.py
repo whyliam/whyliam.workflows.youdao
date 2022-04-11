@@ -7,7 +7,6 @@ if MYPY:
     from typing import Tuple
     from typing import Any
     from typing import Type
-
     from typing import TypeVar
 
     T = TypeVar("T")
@@ -19,7 +18,6 @@ if PY2:
     import urlparse  # noqa
 
     text_type = unicode  # noqa
-    import Queue as queue  # noqa
 
     string_types = (str, text_type)
     number_types = (int, long, float)  # noqa
@@ -37,7 +35,6 @@ if PY2:
 
 else:
     import urllib.parse as urlparse  # noqa
-    import queue  # noqa
 
     text_type = str
     string_types = (text_type,)  # type: Tuple[type]
@@ -59,12 +56,12 @@ else:
 
 def with_metaclass(meta, *bases):
     # type: (Any, *Any) -> Any
-    class metaclass(type):
+    class MetaClass(type):
         def __new__(metacls, name, this_bases, d):
             # type: (Any, Any, Any, Any) -> Any
             return meta(name, bases, d)
 
-    return type.__new__(metaclass, "temporary_class", (), {})
+    return type.__new__(MetaClass, "temporary_class", (), {})
 
 
 def check_thread_support():
@@ -87,6 +84,6 @@ def check_thread_support():
                 "We detected the use of uwsgi with disabled threads.  "
                 "This will cause issues with the transport you are "
                 "trying to use.  Please enable threading for uwsgi.  "
-                '(Enable the "enable-threads" flag).'
+                '(Add the "enable-threads" flag).'
             )
         )
