@@ -2,11 +2,15 @@ from __future__ import absolute_import
 
 from sentry_sdk._types import MYPY
 from sentry_sdk.hub import Hub
-from sentry_sdk.integrations import Integration
-from sentry_sdk.tracing import record_sql_queries
+from sentry_sdk.integrations import Integration, DidNotEnable
+from sentry_sdk.tracing_utils import RecordSqlQueries
 
-from sqlalchemy.engine import Engine  # type: ignore
-from sqlalchemy.event import listen  # type: ignore
+try:
+    from sqlalchemy.engine import Engine  # type: ignore
+    from sqlalchemy.event import listen  # type: ignore
+    from sqlalchemy import __version__ as SQLALCHEMY_VERSION  # type: ignore
+except ImportError:
+    raise DidNotEnable("SQLAlchemy not installed.")
 
 if MYPY:
     from typing import Any
@@ -23,9 +27,19 @@ class SqlalchemyIntegration(Integration):
     def setup_once():
         # type: () -> None
 
+        try:
+            version = tuple(map(int, SQLALCHEMY_VERSION.split("b")[0].split(".")))
+        except (TypeError, ValueError):
+            raise DidNotEnable(
+                "Unparsable SQLAlchemy version: {}".format(SQLALCHEMY_VERSION)
+            )
+
+        if version < (1, 2):
+            raise DidNotEnable("SQLAlchemy 1.2 or newer required.")
+
         listen(Engine, "before_cursor_execute", _before_cursor_execute)
         listen(Engine, "after_cursor_execute", _after_cursor_execute)
-        listen(Engine, "dbapi_error", _dbapi_error)
+        listen(Engine, "handle_error", _handle_error)
 
 
 def _before_cursor_execute(
@@ -36,7 +50,7 @@ def _before_cursor_execute(
     if hub.get_integration(SqlalchemyIntegration) is None:
         return
 
-    ctx_mgr = record_sql_queries(
+    ctx_mgr = RecordSqlQueries(
         hub,
         cursor,
         statement,
@@ -63,9 +77,21 @@ def _after_cursor_execute(conn, cursor, statement, *args):
         ctx_mgr.__exit__(None, None, None)
 
 
-def _dbapi_error(conn, *args):
+def _handle_error(context, *args):
     # type: (Any, *Any) -> None
+    conn = context.connection
     span = getattr(conn, "_sentry_sql_span", None)  # type: Optional[Span]
 
     if span is not None:
         span.set_status("internal_error")
+
+    # _after_cursor_execute does not get called for crashing SQL stmts. Judging
+    # from SQLAlchemy codebase it does seem like any error coming into this
+    # handler is going to be fatal.
+    ctx_mgr = getattr(
+        conn, "_sentry_sql_span_manager", None
+    )  # type: ContextManager[Any]
+
+    if ctx_mgr is not None:
+        conn._sentry_sql_span_manager = None
+        ctx_mgr.__exit__(None, None, None)

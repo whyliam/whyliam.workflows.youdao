@@ -196,6 +196,8 @@
 				<false/>
 				<key>alfredfiltersresultsmatchmode</key>
 				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
 				<key>argumenttrimmode</key>
 				<integer>0</integer>
 				<key>argumenttype</key>
@@ -234,7 +236,7 @@
 			<key>uid</key>
 			<string>91C343E7-50D8-4B0D-9034-1C16C20DA8D4</string>
 			<key>version</key>
-			<integer>2</integer>
+			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -243,6 +245,8 @@
 				<false/>
 				<key>clipboardtext</key>
 				<string>{query}</string>
+				<key>ignoredynamicplaceholders</key>
+				<false/>
 				<key>transient</key>
 				<false/>
 			</dict>
@@ -251,7 +255,7 @@
 			<key>uid</key>
 			<string>DBA62127-3B78-4B80-B82B-1C6AEC393003</string>
 			<key>version</key>
-			<integer>2</integer>
+			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -306,6 +310,8 @@
 				<true/>
 				<key>clipboardtext</key>
 				<string>{query}</string>
+				<key>ignoredynamicplaceholders</key>
+				<false/>
 				<key>transient</key>
 				<false/>
 			</dict>
@@ -314,7 +320,7 @@
 			<key>uid</key>
 			<string>0907BEF4-816F-48FF-B157-03F5C2AACEAB</string>
 			<key>version</key>
-			<integer>2</integer>
+			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -393,7 +399,7 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>有道翻译 Workflow v2.2.5
+	<string>有道翻译 Workflow v3.0.0
 
 默认快捷键 yd, 查看翻译结果。
 
@@ -526,7 +532,7 @@
 		<string>zhiyun_key</string>
 	</array>
 	<key>version</key>
-	<string>2.2.5</string>
+	<string>3.0.0</string>
 	<key>webaddress</key>
 	<string>https://github.com/whyliam/whyliam.workflows.youdao</string>
 </dict>
