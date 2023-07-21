@@ -10,15 +10,9 @@ import time
 import sys
 import random
 
-YOUDAO_DEFAULT_KEYFROM = ('whyliam-wf-1', 'whyliam-wf-2', 'whyliam-wf-3',
-                          'whyliam-wf-4', 'whyliam-wf-5', 'whyliam-wf-6',
-                          'whyliam-wf-7', 'whyliam-wf-8', 'whyliam-wf-9',
-                          'whyliam-wf-10', 'whyliam-wf-11')
-
-YOUDAO_DEFAULT_KEY = (2002493135, 2002493136, 2002493137,
-                      2002493138, 2002493139, 2002493140,
-                      2002493141, 2002493142, 2002493143,
-                      1947745089, 1947745090)
+YOUDAO_URL = 'https://openapi.youdao.com/api'
+# APP_KEY = 'APP_KEY'
+# APP_SECRET = 'APP_SECRET'
 
 ERRORCODE_DICT = {
     "20": "要翻译的文本过长",
@@ -89,25 +83,6 @@ def sentry_message(errorCode, msg):
             scope.set_tag("errorCode", errorCode)
         sentry_sdk.capture_message(msg)
 
-
-def get_youdao_url(query):
-    # 构建有道翻译URL
-    zhiyun_id = os.getenv('zhiyun_id', '').strip()
-    zhiyun_key = os.getenv('zhiyun_key', '').strip()
-    if zhiyun_id and zhiyun_key:
-        url = get_youdao_new_url(query, zhiyun_id, zhiyun_key)
-    else:
-        youdao_keyfrom = os.getenv('youdao_keyfrom', '').strip()
-        youdao_key = os.getenv('youdao_key', '').strip()
-        if not youdao_keyfrom or not youdao_key:
-            i = random.randrange(0, 11, 1)
-            youdao_keyfrom = YOUDAO_DEFAULT_KEYFROM[i]
-            youdao_key = YOUDAO_DEFAULT_KEY[i]
-        url = get_youdao_old_url(query, youdao_keyfrom, youdao_key)
-    wf.logger.debug(url)
-    return url
-
-
 def get_youdao_old_url(query, youdao_keyfrom, youdao_key):
     import urllib.parse
 
@@ -124,6 +99,17 @@ def encrypt(signStr):
     hash_algorithm.update(signStr.encode('utf-8'))
     return hash_algorithm.hexdigest()
 
+def truncate(q):
+    if q is None:
+        return None
+    size = len(q)
+    return q if size <= 20 else q[0:10] + str(size) + q[size - 10:size]
+
+def encrypt(signStr):
+    hash_algorithm = hashlib.sha256()
+    hash_algorithm.update(signStr.encode('utf-8'))
+    return hash_algorithm.hexdigest()
+
 
 def truncate(q):
     if q is None:
@@ -131,38 +117,46 @@ def truncate(q):
     size = len(q)
     return q if size <= 20 else q[0:10] + str(size) + q[size - 10:size]
 
+# def do_request(data):
+#     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+#     return requests.post(YOUDAO_URL, data=data, headers=headers)
 
-def get_youdao_new_url(query, zhiyun_id, zhiyun_key):
-    import urllib.parse
-    import hashlib
-    import uuid
+def format_data(query):
+    q = query or "待输入的文字"
 
+    data = {}
+    data['from'] = '源语言'
+    data['to'] = '目标语言'
+    data['signType'] = 'v3'
     curtime = str(int(time.time()))
+    data['curtime'] = curtime
     salt = str(uuid.uuid1())
-    signStr = zhiyun_id + truncate(query) + salt + curtime + zhiyun_key
+    signStr = APP_KEY + truncate(q) + salt + curtime + APP_SECRET
     sign = encrypt(signStr)
-    data_form, data_to = QUERY_LANGUAGE.split('2')
+    data['appKey'] = APP_KEY
+    data['q'] = q
+    data['salt'] = salt
+    data['sign'] = sign
 
-    url = 'https://openapi.youdao.com/api' + \
-        '?appKey=' + str(zhiyun_id) + \
-        '&salt=' + str(salt) + \
-        '&sign=' + str(sign) + \
-        '&q=' + urllib.parse.quote(str(query)) + \
-        '&from=' + data_form + \
-        '&to=' + data_to + \
-        '&signType=v3' + \
-        '&curtime=' + curtime
-    return url
-
+    return data
 
 def fetch_translation(query):
-    from urllib import request
+    from urllib import request, parse
+    
+    data = parse.urlencode(format_data(query)).encode()
+    req =  request.Request(YOUDAO_URL, data=data)
+    # 设置请求方法为 POST
+    req.method = 'POST'
 
-    # 获取翻译数据
-    url = get_youdao_url(query)
+    req.add_header('Content-Type', 'application/x-www-form-urlencoded')
+
+    with request.urlopen(req) as response:
+        result = response.read()
+
+    wf.logger.debug(YOUDAO_URL)
+
     try:
-        data = request.urlopen(url).read()
-        rt = json.loads(data)
+        rt = json.loads(result)
         return rt
     except:
         rt = {}
@@ -250,34 +244,10 @@ def add_translation(query, rt):
     subtitle = '翻译结果'
     translations = rt["translation"]
     for title in translations:
-        arg = get_arg_str(query, title)
-        save_history_data(query, title, arg, ICON_DEFAULT)
 
         wf.add_item(
-            title=title, subtitle=subtitle, arg=arg,
+            title=title, subtitle=subtitle, 
             valid=True, icon=ICON_DEFAULT)
-
-
-def add_phonetic(query, rt):
-    # 发音
-    if u'basic' in rt.keys():
-        if rt["basic"] is not None:
-            if rt["basic"].get("phonetic"):
-                title = ""
-                if rt["basic"].get("us-phonetic"):
-                    title += ("[美: " + rt["basic"]["us-phonetic"] + "] ")
-                if rt["basic"].get("uk-phonetic"):
-                    title += ("[英: " + rt["basic"]["uk-phonetic"] + "] ")
-                title = title if title else "[" + rt["basic"]["phonetic"] + "]"
-                subtitle = '有道发音'
-                data_form, data_to = QUERY_LANGUAGE.split('2')
-                arg = get_arg_str(query, title, pronounce=query,
-                                  query_language=data_form)
-
-                wf.add_item(
-                    title=title, subtitle=subtitle, arg=arg,
-                    valid=True, icon=ICON_PHONETIC)
-
 
 def add_explains(query, rt):
     # 简明释意
@@ -285,13 +255,12 @@ def add_explains(query, rt):
         if rt["basic"] is not None:
             for i in range(len(rt["basic"]["explains"])):
                 title = rt["basic"]["explains"][i]
-                subtitle = '简明释意'
+                subtitle = '词义'
                 arg = get_arg_str(query, title)
 
                 wf.add_item(
                     title=title, subtitle=subtitle, arg=arg,
                     valid=True, icon=ICON_PHONETIC)
-
 
 def add_web_translation(query, rt):
   # 网络翻译
@@ -338,9 +307,7 @@ def main(wf):
                 valid=True, icon=ICON_ERROR)
 
         elif errorCode == "0":
-            # get_l(query, rt)
             add_translation(query, rt)
-            add_phonetic(query, rt)
             add_explains(query, rt)
             add_web_translation(query, rt)
 
