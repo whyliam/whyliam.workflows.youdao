@@ -244,9 +244,10 @@ def add_translation(query, rt):
     subtitle = '翻译结果'
     translations = rt["translation"]
     for title in translations:
+        arg = get_arg_str(query, title)
 
         wf.add_item(
-            title=title, subtitle=subtitle, 
+            title=title, subtitle=subtitle, arg=arg,
             valid=True, icon=ICON_DEFAULT)
 
 def add_explains(query, rt):
