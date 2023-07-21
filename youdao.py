@@ -245,6 +245,7 @@ def add_translation(query, rt):
     translations = rt["translation"]
     for title in translations:
         arg = get_arg_str(query, title)
+        save_history_data(query, title, arg, ICON_DEFAULT)
 
         wf.add_item(
             title=title, subtitle=subtitle, arg=arg,
