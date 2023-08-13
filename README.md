@@ -1,6 +1,6 @@
 # whyliam.workflows.youdao
 
-## 有道翻译 workflow v3.0.0
+## 有道翻译 workflow v3.1.0
 
 默认快捷键 `yd`，查看翻译结果。
 
@@ -24,31 +24,13 @@
 
 ### 下载
 
-#### Python 3 版本
+[Python 3 版本](https://github.com/whyliam/whyliam.workflows.youdao/releases/download/3.1.0/whyliam.workflows.youdao.alfredworkflow) - 感谢 [Pid](https://github.com/zhugexiaobo)
 
-[Python 3 版本](https://github.com/whyliam/whyliam.workflows.youdao/releases/download/3.0.0/whyliam.workflows.youdao.alfredworkflow) - 感谢 [Pid](https://github.com/zhugexiaobo)
+### 使用说明
 
-#### Python 2 版本
-`macOS 12.3` 以下的用户请使用以下版本
+[使用说明](Introduction/有道翻译.md) 
 
-[Python 2  版本](https://github.com/whyliam/whyliam.workflows.youdao/releases/download/2.2.5/whyliam.workflows.youdao.alfredworkflow)
 
-### 安装
-
-1\. [下载](https://github.com/whyliam/whyliam.workflows.youdao/releases)最新版本双击安装
-
-2\. [注册](http://ai.youdao.com/appmgr.s)有道智云应用
-
-3\. 在 Alfred 的设置中填入对应的`应用ID`和`应用密钥`
-
-![](https://tva1.sinaimg.cn/large/006tNbRwly1g9oapg37t0j31am0sgjxr.jpg)
-
-4\. 在 Alfred 的设置中设置快捷方式键
-![](http://ww2.sinaimg.cn/large/006tNbRwgy1feno6pzaxdj31a60p0jsl.jpg)
-
-### 问题
-
-如果新版本有道智云遇到问题，请参见 [错误代码列表](http://ai.youdao.com/docs/doc-trans-api.s#p08)。
 
 ### 演示
 

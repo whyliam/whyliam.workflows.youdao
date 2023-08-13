@@ -152,12 +152,14 @@
 			<dict>
 				<key>browser</key>
 				<string></string>
+				<key>skipqueryencode</key>
+				<false/>
+				<key>skipvarencode</key>
+				<false/>
 				<key>spaces</key>
 				<string></string>
 				<key>url</key>
-				<string>http://dict.youdao.com/search?q={query}</string>
-				<key>utf8</key>
-				<true/>
+				<string>https://dict.youdao.com/result?word={query}&amp;lang=en&amp;keyfrom=whyliam.workflows.youdao</string>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.openurl</string>
@@ -399,7 +401,7 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>有道翻译 Workflow v3.0.0
+	<string>有道翻译 Workflow v3.1.0
 
 默认快捷键 yd, 查看翻译结果。
 
@@ -426,113 +428,144 @@
 		<key>0907BEF4-816F-48FF-B157-03F5C2AACEAB</key>
 		<dict>
 			<key>xpos</key>
-			<integer>830</integer>
+			<real>830</real>
 			<key>ypos</key>
-			<integer>420</integer>
+			<real>420</real>
 		</dict>
 		<key>27E60581-8105-41DD-8E29-4FE811179098</key>
 		<dict>
 			<key>xpos</key>
-			<integer>500</integer>
+			<real>500</real>
 			<key>ypos</key>
-			<integer>290</integer>
+			<real>290</real>
 		</dict>
 		<key>4473C9D3-7A15-4D31-84F6-A096A7CFF46C</key>
 		<dict>
 			<key>xpos</key>
-			<integer>830</integer>
+			<real>830</real>
 			<key>ypos</key>
-			<integer>150</integer>
+			<real>150</real>
 		</dict>
 		<key>5751065C-52C1-4D19-8F7D-03B730BFE440</key>
 		<dict>
 			<key>note</key>
 			<string>双击设置快捷方式</string>
 			<key>xpos</key>
-			<integer>270</integer>
+			<real>270</real>
 			<key>ypos</key>
-			<integer>440</integer>
+			<real>440</real>
 		</dict>
 		<key>6A03FDC5-89AC-4F9D-9456-3762ACA751FE</key>
 		<dict>
 			<key>xpos</key>
-			<integer>830</integer>
+			<real>830</real>
 			<key>ypos</key>
-			<integer>40</integer>
+			<real>40</real>
 		</dict>
 		<key>7C1ABC41-3B36-401F-96C7-30BCB39181FF</key>
 		<dict>
 			<key>xpos</key>
-			<integer>500</integer>
+			<real>500</real>
 			<key>ypos</key>
-			<integer>410</integer>
+			<real>410</real>
 		</dict>
 		<key>7CAE8B02-CE31-4941-AD5F-C36CC84D164B</key>
 		<dict>
 			<key>xpos</key>
-			<integer>500</integer>
+			<real>500</real>
 			<key>ypos</key>
-			<integer>560</integer>
+			<real>560</real>
 		</dict>
 		<key>91C343E7-50D8-4B0D-9034-1C16C20DA8D4</key>
 		<dict>
 			<key>xpos</key>
-			<integer>270</integer>
+			<real>270</real>
 			<key>ypos</key>
-			<integer>250</integer>
+			<real>250</real>
 		</dict>
 		<key>DA8E4597-4B45-4C4C-A8D0-755BD785BD7A</key>
 		<dict>
 			<key>xpos</key>
-			<integer>830</integer>
+			<real>830</real>
 			<key>ypos</key>
-			<integer>560</integer>
+			<real>560</real>
 		</dict>
 		<key>DBA62127-3B78-4B80-B82B-1C6AEC393003</key>
 		<dict>
 			<key>xpos</key>
-			<integer>830</integer>
+			<real>830</real>
 			<key>ypos</key>
-			<integer>290</integer>
+			<real>290</real>
 		</dict>
 		<key>F99C4C55-10F5-4D62-A77D-F27058629B21</key>
 		<dict>
 			<key>xpos</key>
-			<integer>500</integer>
+			<real>500</real>
 			<key>ypos</key>
-			<integer>40</integer>
+			<real>40</real>
 		</dict>
 	</dict>
+	<key>userconfigurationconfig</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string></string>
+				<key>placeholder</key>
+				<string>请输入应用ID</string>
+				<key>required</key>
+				<true/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>应用ID</string>
+			<key>label</key>
+			<string>应用ID</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>zhiyun_id</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string></string>
+				<key>placeholder</key>
+				<string>请输入应用密钥</string>
+				<key>required</key>
+				<true/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>应用密钥</string>
+			<key>label</key>
+			<string>应用密钥</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>zhiyun_key</string>
+		</dict>
+	</array>
 	<key>variables</key>
 	<dict>
 		<key>filepath</key>
 		<string>~/Documents/Alfred-youdao-wordbook.xml</string>
 		<key>password</key>
 		<string></string>
-		<key>sentry</key>
-		<string>True</string>
 		<key>username</key>
-		<string></string>
-		<key>youdao_key</key>
-		<string></string>
-		<key>youdao_keyfrom</key>
-		<string></string>
-		<key>zhiyun_id</key>
-		<string></string>
-		<key>zhiyun_key</key>
 		<string></string>
 	</dict>
 	<key>variablesdontexport</key>
 	<array>
-		<string>youdao_key</string>
 		<string>username</string>
 		<string>password</string>
-		<string>youdao_keyfrom</string>
-		<string>zhiyun_id</string>
-		<string>zhiyun_key</string>
 	</array>
 	<key>version</key>
-	<string>3.0.0</string>
+	<string>3.1.0</string>
 	<key>webaddress</key>
 	<string>https://github.com/whyliam/whyliam.workflows.youdao</string>
 </dict>
