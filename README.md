@@ -1,6 +1,10 @@
 # whyliam.workflows.youdao
+>
+> 原来的版本使用的是有道智云的 API，但是目前这个 API 接口不在支持字典查询，只支持翻译。
+> 但是，在我的日常过程中，对于字典的使用频率大于翻译。所以，我重新写了一个版本。
+> 同时，未来我不在使用 Alfred，主要使用 Raycast，因此这个 Workflow 也不会再维护。
 
-## 有道翻译 workflow v3.1.0
+## 有道翻译 workflow v4.0.0
 
 默认快捷键 `yd`，查看翻译结果。
 
@@ -10,7 +14,7 @@
 4. 打开有道翻译页面，查看详细内容
 5. 直接在打出翻译结果
 6. 显示历史查询记录
-7. 同步单词到有道在线单词本
+7. ~~同步单词到有道在线单词本~~
 
 ### 功能
 
@@ -24,13 +28,9 @@
 
 ### 下载
 
-[Python 3 版本](https://github.com/whyliam/whyliam.workflows.youdao/releases/download/3.1.0/whyliam.workflows.youdao.alfredworkflow) - 感谢 [Pid](https://github.com/zhugexiaobo)
+[Python 3 版本](https://github.com/whyliam/whyliam.workflows.youdao/releases/download/4.0.0/whyliam.workflows.youdao.alfredworkflow) 
 
 ### 使用说明
-
-[使用说明](Introduction/有道翻译.md) 
-
-
 
 ### 演示
 
@@ -62,35 +62,13 @@
 
 ![](http://ww1.sinaimg.cn/large/006tNbRwgy1fenosusv0bg30qn0qpq7a.gif)
 
-#### 同步单词到有道在线单词本 - `Alt+回车`
-
-![](https://ws4.sinaimg.cn/large/006tNc79ly1g01esa4p4bj31ig0u0atl.jpg)
-
-分别在`username`, `password`中输入有道的用户名和密码。
-
-在`filepath`中输入有道单词本离线保存的位置，默认在`~/Documents`中。
-
-查询单词后按 `Alt+回车` 将单词保存到有道词典的单词本，在保存失败的时候单词将保存在离线单词本中。
-
-### 其他配置
-
-| 关键字         | 说明                   | 默认                                   |
-| -------------- | ---------------------- | -------------------------------------- |
-| username       | 有道在线单词本用户名   |                                        |
-| password       | 有道在线单词本密码     |                                        |
-| filepath       | 有道离线单词本保存位置 | ~/Documents/Alfred-youdao-wordbook.xml |
-| youdao_key     | 老版有道翻译Key        |                                        |
-| youdao_keyfrom | 老版有道翻译Keyfrom    |                                        |
-| zhiyun_id      | 有道智云ID             |                                        |
-| zhiyun_key     | 有道智云Key            |                                        |
-
 ### 问题说明
 
 1 . **macOS** Catalina  需要在 系统设置-安全性与隐私-辅助功能，重新授权`Alfred 4`权限。
 
 ### 更多
 
-更多问题参见[Alfred 有道翻译简介](https://blog.naaln.com/2017/04/alfred-youdao-intro/)
+更多问题参见 [Alfred 有道翻译简介](https://blog.naaln.com/2017/04/alfred-youdao-intro/)
 
 ---
 
@@ -115,4 +93,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-

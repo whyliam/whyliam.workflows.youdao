@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import sys
+import os
 
 # 主要备注：
 # 1. 该脚本用于与有道翻译API交互，获取翻译结果、发音和释义。
@@ -6,11 +8,9 @@
 # 3. 记录历史查询到history.log文件中。
 
 from workflow import Workflow3
-import os
 import json
 import uuid
 import time
-import sys
 import requests
 from bs4 import BeautifulSoup
 

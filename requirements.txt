@@ -1,0 +1,14 @@
+autosemver==0.5.5
+beautifulsoup4==4.12.3
+blinker==1.8.2
+certifi==2024.8.30
+charset-normalizer==3.3.2
+configobj==5.0.8
+dulwich==0.19.16
+enum34==1.1.10
+idna==3.10
+requests==2.32.3
+six==1.16.0
+soupsieve==2.6
+urllib3==2.2.3
+workflow==2.1.6
