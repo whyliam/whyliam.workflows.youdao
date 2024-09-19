@@ -34,19 +34,6 @@
 				<false/>
 			</dict>
 		</array>
-		<key>7CAE8B02-CE31-4941-AD5F-C36CC84D164B</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>DA8E4597-4B45-4C4C-A8D0-755BD785BD7A</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
 		<key>91C343E7-50D8-4B0D-9034-1C16C20DA8D4</key>
 		<array>
 			<dict>
@@ -89,16 +76,6 @@
 				<key>vitoclose</key>
 				<false/>
 			</dict>
-			<dict>
-				<key>destinationuid</key>
-				<string>7CAE8B02-CE31-4941-AD5F-C36CC84D164B</string>
-				<key>modifiers</key>
-				<integer>524288</integer>
-				<key>modifiersubtext</key>
-				<string>同步到单词本</string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
 		</array>
 		<key>F99C4C55-10F5-4D62-A77D-F27058629B21</key>
 		<array>
@@ -127,6 +104,27 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>browser</key>
+				<string></string>
+				<key>skipqueryencode</key>
+				<false/>
+				<key>skipvarencode</key>
+				<false/>
+				<key>spaces</key>
+				<string></string>
+				<key>url</key>
+				<string>https://dict.youdao.com/result?word={query}&amp;lang=en&amp;keyfrom=whyliam.workflows.youdao</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.openurl</string>
+			<key>uid</key>
+			<string>6A03FDC5-89AC-4F9D-9456-3762ACA751FE</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -146,27 +144,6 @@
 			<string>F99C4C55-10F5-4D62-A77D-F27058629B21</string>
 			<key>version</key>
 			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>browser</key>
-				<string></string>
-				<key>skipqueryencode</key>
-				<false/>
-				<key>skipvarencode</key>
-				<false/>
-				<key>spaces</key>
-				<string></string>
-				<key>url</key>
-				<string>https://dict.youdao.com/result?word={query}&amp;lang=en&amp;keyfrom=whyliam.workflows.youdao</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.openurl</string>
-			<key>uid</key>
-			<string>6A03FDC5-89AC-4F9D-9456-3762ACA751FE</string>
-			<key>version</key>
-			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -219,7 +196,9 @@
 				<key>runningsubtext</key>
 				<string>正在获取中...</string>
 				<key>script</key>
-				<string>/usr/bin/python3 youdao.py "{query}"</string>
+				<string>source ~/.zshrc
+pyenv activate alfred
+python3 youdao.py "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -229,7 +208,7 @@
 				<key>title</key>
 				<string>有道翻译</string>
 				<key>type</key>
-				<integer>0</integer>
+				<integer>5</integer>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -355,53 +334,9 @@
 			<key>version</key>
 			<integer>2</integer>
 		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>concurrently</key>
-				<false/>
-				<key>escaping</key>
-				<integer>0</integer>
-				<key>script</key>
-				<string>/usr/bin/python3 saveword.py "{query}"</string>
-				<key>scriptargtype</key>
-				<integer>0</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>type</key>
-				<integer>0</integer>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.script</string>
-			<key>uid</key>
-			<string>7CAE8B02-CE31-4941-AD5F-C36CC84D164B</string>
-			<key>version</key>
-			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>lastpathcomponent</key>
-				<false/>
-				<key>onlyshowifquerypopulated</key>
-				<true/>
-				<key>removeextension</key>
-				<false/>
-				<key>text</key>
-				<string></string>
-				<key>title</key>
-				<string>{query}</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.output.notification</string>
-			<key>uid</key>
-			<string>DA8E4597-4B45-4C4C-A8D0-755BD785BD7A</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
 	</array>
 	<key>readme</key>
-	<string>有道翻译 Workflow v3.1.0
+	<string>有道翻译 Workflow v4.0.0
 
 默认快捷键 yd, 查看翻译结果。
 
@@ -422,7 +357,8 @@
 6. `yd *` 显示历史查询记录
 
 更多
-参见 https://blog.naaln.com/2017/04/alfred-youdao-intro/</string>
+
+参见 https://blog.naaln.com/2024/09/alfred-youdao-intro/</string>
 	<key>uidata</key>
 	<dict>
 		<key>0907BEF4-816F-48FF-B157-03F5C2AACEAB</key>
@@ -469,26 +405,12 @@
 			<key>ypos</key>
 			<real>410</real>
 		</dict>
-		<key>7CAE8B02-CE31-4941-AD5F-C36CC84D164B</key>
-		<dict>
-			<key>xpos</key>
-			<real>500</real>
-			<key>ypos</key>
-			<real>560</real>
-		</dict>
 		<key>91C343E7-50D8-4B0D-9034-1C16C20DA8D4</key>
 		<dict>
 			<key>xpos</key>
 			<real>270</real>
 			<key>ypos</key>
 			<real>250</real>
-		</dict>
-		<key>DA8E4597-4B45-4C4C-A8D0-755BD785BD7A</key>
-		<dict>
-			<key>xpos</key>
-			<real>830</real>
-			<key>ypos</key>
-			<real>560</real>
 		</dict>
 		<key>DBA62127-3B78-4B80-B82B-1C6AEC393003</key>
 		<dict>
@@ -506,66 +428,14 @@
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>
-	<array>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>default</key>
-				<string></string>
-				<key>placeholder</key>
-				<string>请输入应用ID</string>
-				<key>required</key>
-				<true/>
-				<key>trim</key>
-				<true/>
-			</dict>
-			<key>description</key>
-			<string>应用ID</string>
-			<key>label</key>
-			<string>应用ID</string>
-			<key>type</key>
-			<string>textfield</string>
-			<key>variable</key>
-			<string>zhiyun_id</string>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>default</key>
-				<string></string>
-				<key>placeholder</key>
-				<string>请输入应用密钥</string>
-				<key>required</key>
-				<true/>
-				<key>trim</key>
-				<true/>
-			</dict>
-			<key>description</key>
-			<string>应用密钥</string>
-			<key>label</key>
-			<string>应用密钥</string>
-			<key>type</key>
-			<string>textfield</string>
-			<key>variable</key>
-			<string>zhiyun_key</string>
-		</dict>
-	</array>
+	<array/>
 	<key>variables</key>
 	<dict>
 		<key>filepath</key>
 		<string>~/Documents/Alfred-youdao-wordbook.xml</string>
-		<key>password</key>
-		<string></string>
-		<key>username</key>
-		<string></string>
 	</dict>
-	<key>variablesdontexport</key>
-	<array>
-		<string>username</string>
-		<string>password</string>
-	</array>
 	<key>version</key>
-	<string>3.1.0</string>
+	<string>4.0.0</string>
 	<key>webaddress</key>
 	<string>https://github.com/whyliam/whyliam.workflows.youdao</string>
 </dict>
