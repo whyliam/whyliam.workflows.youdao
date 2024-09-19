@@ -196,9 +196,7 @@
 				<key>runningsubtext</key>
 				<string>正在获取中...</string>
 				<key>script</key>
-				<string>source ~/.zshrc
-pyenv activate alfred
-python3 youdao.py "{query}"</string>
+				<string>/usr/bin/python3 youdao.py "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -208,7 +206,7 @@ python3 youdao.py "{query}"</string>
 				<key>title</key>
 				<string>有道翻译</string>
 				<key>type</key>
-				<integer>5</integer>
+				<integer>0</integer>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -434,6 +432,8 @@ python3 youdao.py "{query}"</string>
 		<key>filepath</key>
 		<string>~/Documents/Alfred-youdao-wordbook.xml</string>
 	</dict>
+	<key>variablesdontexport</key>
+	<array/>
 	<key>version</key>
 	<string>4.0.0</string>
 	<key>webaddress</key>
