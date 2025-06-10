@@ -7,7 +7,7 @@ configobj==5.0.8
 dulwich==0.19.16
 enum34==1.1.10
 idna==3.10
-requests==2.32.3
+requests==2.32.4
 six==1.16.0
 soupsieve==2.6
 urllib3==2.2.3
