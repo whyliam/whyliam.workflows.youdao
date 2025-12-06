@@ -10,5 +10,5 @@ idna==3.10
 requests==2.32.3
 six==1.16.0
 soupsieve==2.6
-urllib3==2.2.3
+urllib3==2.6.0
 workflow==2.1.6
