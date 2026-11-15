@@ -102,6 +102,14 @@ def history(items=None):
                 try:
                     record = json.loads(line)
                     if isinstance(record, dict) and isinstance(record.get('title'), str):
+                        payload = record.get('arg')
+                        if not isinstance(payload, str):
+                            continue
+                        if not payload.startswith('{'):
+                            parts = payload.split('$%')
+                            if len(parts) != 6:
+                                continue
+                            record = make_item(parts[1], parts[2], record.get('subtitle', '简明释义'))
                         if isinstance(record.get('icon'), str):
                             record['icon'] = {'path': record['icon']}
                         records.append(record)

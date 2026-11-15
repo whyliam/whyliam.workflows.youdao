@@ -11,7 +11,7 @@
 
 ## 安装
 
-双击仓库中的 `whyliam.workflows.youdao.alfredworkflow` 导入 Alfred。
+从 [最新 Release](https://github.com/whyliam/whyliam.workflows.youdao/releases/latest) 下载 `.alfredworkflow` 文件，双击导入 Alfred。也可使用仓库中的同名文件。
 需要支持 Workflow 的 Alfred 和 `/usr/bin/python3`。若系统没有 Python 3，需要先安装 Apple Command Line Tools，或将 Workflow 脚本中的解释器路径改为本机 Python 3 的绝对路径。
 
 运行时仅使用 Python 3 标准库，无需 pip 安装依赖。历史版本自带的第三方库不再参与运行，也不会进入新安装包。
@@ -29,8 +29,12 @@
 ```sh
 python3 -m unittest discover -s tests -v
 python3 scripts/package.py
+python3 scripts/verify.py
+python3 scripts/verify.py --live  # 实际访问有道，网络或服务故障会失败
 ```
 
 4.1.0 修复：中日韩释义漏解析、句子翻译失败、特殊字符查询错误、发音 shell 注入、Alfred 参数注入、历史 JSON 损坏、缺失历史文件异常、空输入异常、英文句子发音语言误判及第三方依赖兼容警告。
 
 MIT License，见 `License`。
+
+GitHub Actions 会在推送和 PR 时运行回归测试、安装包校验及可重复构建检查。版本标签（如 `4.1.0`）通过检查后自动发布 Release 和安装包。真实接口测试由本机显式执行，不作为离线回归检查。

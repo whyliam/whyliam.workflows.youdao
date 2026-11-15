@@ -61,10 +61,6 @@ class WorkflowTests(unittest.TestCase):
     def test_web_exact_match(self):
         self.assertEqual(youdao.parse_results('a', {'web_trans': {'web-translation': [{'key': 'another', 'trans': [{'value': '错误'}]}]}}), [])
 
-
-if __name__ == '__main__':
-    unittest.main()
-
 class ActionTests(unittest.TestCase):
     def test_browser_action(self):
         from io import StringIO
@@ -79,3 +75,7 @@ class ActionTests(unittest.TestCase):
         with patch('sys.stdout', new_callable=StringIO) as output:
             self.assertEqual(splitargs.main([youdao.make_item('q', 'hello $% "你好"')['arg'], 'copy']), 0)
             self.assertEqual(output.getvalue(), 'hello $% "你好"')
+
+
+if __name__ == '__main__':
+    unittest.main()
