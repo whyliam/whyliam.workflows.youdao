@@ -1,95 +1,40 @@
-# whyliam.workflows.youdao
->
-> 原来的版本使用的是有道智云的 API，但是目前这个 API 接口不在支持字典查询，只支持翻译。
-> 但是，在我的日常过程中，对于字典的使用频率大于翻译。所以，我重新写了一个版本。
-> 同时，未来我不在使用 Alfred，主要使用 Raycast，因此这个 Workflow 也不会再维护。
+# 有道词典 Alfred Workflow 4.1.0
 
-## 有道翻译 workflow v4.0.0
+输入 `yd 单词或句子` 查询中英、日中、韩中释义及句子翻译。
 
-默认快捷键 `yd`，查看翻译结果。
+- 回车：复制所选结果。
+- Command + 回车：粘贴所选结果。
+- Control + 回车：打开对应语言的有道词典网页；查询失败时也可使用。
+- Shift + 回车：使用 macOS 本机语音朗读原文（并非有道音频）。
+- `yd *`：显示最近 9 条释义。空查询显示使用提示。
+- 选中文字快捷查询：在 Alfred 中自行设置 Workflow 的 Hotkey。
 
-1. 英译中
-2. 中译英
-3. 翻译短语句子
-4. 打开有道翻译页面，查看详细内容
-5. 直接在打出翻译结果
-6. 显示历史查询记录
-7. ~~同步单词到有道在线单词本~~
+## 安装
 
-### 功能
+从 [最新 Release](https://github.com/whyliam/whyliam.workflows.youdao/releases/latest) 下载 `.alfredworkflow` 文件，双击导入 Alfred。也可使用仓库中的同名文件。
+需要支持 Workflow 的 Alfred 和 `/usr/bin/python3`。若系统没有 Python 3，需要先安装 Apple Command Line Tools，或将 Workflow 脚本中的解释器路径改为本机 Python 3 的绝对路径。
 
-1. 按`回车` 复制
-2. 按`Control ⌃+回车` 打开有道翻译页面
-3. 按`Command ⌘+回车` 直接在打出翻译结果
-4. 按`Shift ⇧+回车` 直接发音
-5. 选中文字 双击`Option ⌥`进行翻译（需要另行设置）
-6. `yd *` 显示历史查询记录
-7. 按`Alt+回车`, 同步单词到有道在线单词本
+运行时仅使用 Python 3 标准库，无需 pip 安装依赖。历史版本自带的第三方库不再参与运行，也不会进入新安装包。
 
-### 下载
+## 接口与数据
 
-[Python 3 版本](https://github.com/whyliam/whyliam.workflows.youdao/releases/download/4.0.0/whyliam.workflows.youdao.alfredworkflow) 
+通过 HTTPS 调用有道词典网站的 `https://dict.youdao.com/jsonapi_s`，查询参数统一编码，请求超时 10 秒。该网站接口不是有稳定性承诺的有道智云 API，可能调整或限流；失败时显示错误并保留网页查询入口。翻译结果由有道返回，不保证译文准确性。
 
-### 使用说明
+历史记录保存在 Alfred 的 `alfred_workflow_data` 目录中；直接运行时使用 `~/Library/Application Support/Alfred/Workflow Data/whyliam.workflows.youdao`。采用 UTF-8 JSON Lines，最多保留 200 条、去重，并通过文件锁和原子替换处理并发。首次读取可兼容旧版 Workflow 目录的 `history.log`，损坏记录会跳过。查询原文会发送给有道，释义保存在本机历史中。
 
-### 演示
+不再使用旧版 Cookie 和在线单词本功能。安装包不包含 Cookie、历史记录或第三方依赖。
 
-#### 英译中
+## 开发与验证
 
-![](http://ww3.sinaimg.cn/large/006tNbRwgy1fenonlxdjwg30sv0r7wkd.gif)
+```sh
+python3 -m unittest discover -s tests -v
+python3 scripts/package.py
+python3 scripts/verify.py
+python3 scripts/verify.py --live  # 实际访问有道，网络或服务故障会失败
+```
 
-#### 中译英
+4.1.0 修复：中日韩释义漏解析、句子翻译失败、特殊字符查询错误、发音 shell 注入、Alfred 参数注入、历史 JSON 损坏、缺失历史文件异常、空输入异常、英文句子发音语言误判及第三方依赖兼容警告。
 
-![](http://ww1.sinaimg.cn/large/006tNbRwgy1fenonzclvfg30sw0r90zo.gif)
+MIT License，见 `License`。
 
-#### 翻译短语
-
-![](http://ww3.sinaimg.cn/large/006tNbRwgy1fenooolrkpg30t00r47bg.gif)
-
-#### 发音 - 按`Shift ⇧+回车`
-
-![](http://ww3.sinaimg.cn/large/006tNbRwgy1fenooolrkpg30t00r47bg.gif)
-
-#### 打开有道翻译页面 - 按`Control ⌃+回车`
-
-![](http://ww2.sinaimg.cn/large/006tNbRwgy1fenopnjw9qg30tj0r5n8k.gif)
-
-#### 直接在打出翻译结果 - 按`Command ⌘+回车`
-
-![](http://ww3.sinaimg.cn/large/006tNbRwgy1fenomln8jdg30sx0r4wg2.gif)
-
-#### 双击快速翻译 - 双击`Option ⌥`
-
-![](http://ww1.sinaimg.cn/large/006tNbRwgy1fenosusv0bg30qn0qpq7a.gif)
-
-### 问题说明
-
-1 . **macOS** Catalina  需要在 系统设置-安全性与隐私-辅助功能，重新授权`Alfred 4`权限。
-
-### 更多
-
-更多问题参见 [Alfred 有道翻译简介](https://blog.naaln.com/2017/04/alfred-youdao-intro/)
-
----
-
-## The MIT License (MIT)
-
-Copyright (c) 2015
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+GitHub Actions 会在推送和 PR 时运行回归测试、安装包校验及可重复构建检查。版本标签（如 `4.1.0`）通过检查后自动发布 Release 和安装包。真实接口测试由本机显式执行，不作为离线回归检查。

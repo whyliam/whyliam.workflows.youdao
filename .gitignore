@@ -1,6 +1,5 @@
-
-*.pyc
+__pycache__/
+*.py[cod]
 history.log
 youdao_cookie
 .DS_Store
-history.log

@@ -1,0 +1,35 @@
+name: Verify and release
+on:
+  push:
+    branches: [master, '4.0.0']
+    tags: ['4.*']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Regression tests
+        run: python3 -m unittest discover -s tests -v
+      - name: Validate committed installable package
+        run: python3 scripts/verify.py
+      - name: Verify reproducible build
+        run: |
+          python3 scripts/package.py
+          git diff --exit-code -- whyliam.workflows.youdao.alfredworkflow
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish tested workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 scripts/release.py
