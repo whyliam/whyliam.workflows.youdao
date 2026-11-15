@@ -334,46 +334,97 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string># 有道词典 Alfred Workflow 4.1.0
+	<string># 有道翻译 · Alfred Workflow
 
-输入 `yd 单词或句子` 查询中英、日中、韩中释义及句子翻译。
+在 Alfred 里输入 `yd`，就能查单词、翻译句子、听发音，也能把结果直接粘贴到正在编辑的内容中。
 
-- 回车：复制所选结果。
-- Command + 回车：粘贴所选结果。
-- Control + 回车：打开对应语言的有道词典网页；查询失败时也可使用。
-- Shift + 回车：使用 macOS 本机语音朗读原文（并非有道音频）。
-- `yd *`：显示最近 9 条释义。空查询显示使用提示。
-- 选中文字快捷查询：在 Alfred 中自行设置 Workflow 的 Hotkey。
+延续上一版以查词为主的使用方式，4.1.0 修复了中译英、日语和韩语释义，以及句子翻译等功能。
 
-## 安装
+## 下载与安装
 
-从 [最新 Release](https://github.com/whyliam/whyliam.workflows.youdao/releases/latest) 下载 `.alfredworkflow` 文件，双击导入 Alfred。也可使用仓库中的同名文件。
-需要支持 Workflow 的 Alfred 和 `/usr/bin/python3`。若系统没有 Python 3，需要先安装 Apple Command Line Tools，或将 Workflow 脚本中的解释器路径改为本机 Python 3 的绝对路径。
+**[下载最新版 Workflow](https://github.com/whyliam/whyliam.workflows.youdao/releases/latest)**，在页面的 **Assets** 中下载 `whyliam.workflows.youdao.alfredworkflow`，双击导入 Alfred。
 
-运行时仅使用 Python 3 标准库，无需 pip 安装依赖。历史版本自带的第三方库不再参与运行，也不会进入新安装包。
+需要已解锁 Workflow 功能的 Alfred（Powerpack），以及 Python 3。安装后无需配置有道账号、API Key 或 Cookie。
 
-## 接口与数据
+## 开始使用
 
-通过 HTTPS 调用有道词典网站的 `https://dict.youdao.com/jsonapi_s`，查询参数统一编码，请求超时 10 秒。该网站接口不是有稳定性承诺的有道智云 API，可能调整或限流；失败时显示错误并保留网页查询入口。翻译结果由有道返回，不保证译文准确性。
+唤出 Alfred，输入 `yd`，按空格，再输入想查询的内容：
 
-历史记录保存在 Alfred 的 `alfred_workflow_data` 目录中；直接运行时使用 `~/Library/Application Support/Alfred/Workflow Data/whyliam.workflows.youdao`。采用 UTF-8 JSON Lines，最多保留 200 条、去重，并通过文件锁和原子替换处理并发。首次读取可兼容旧版 Workflow 目录的 `history.log`，损坏记录会跳过。查询原文会发送给有道，释义保存在本机历史中。
+| 想做什么 | 输入示例 |
+| --- | --- |
+| 英译中、查英文单词 | `yd hello` |
+| 中译英 | `yd 你好` |
+| 翻译英文短语 | `yd How are you?` |
+| 翻译句子 | `yd 今天下午我们一起去公园散步。` |
+| 查日语释义 | `yd こんにちは` |
+| 查韩语释义 | `yd 안녕하세요` |
+| 查看最近查询 | `yd *` |
 
-不再使用旧版 Cookie 和在线单词本功能。安装包不包含 Cookie、历史记录或第三方依赖。
+结果中会显示释义、翻译，以及有道提供的音标或拼音。用方向键选择需要的那一项，再按下面的快捷键操作。
 
-## 开发与验证
+## 对查询结果进行操作
 
-```sh
-python3 -m unittest discover -s tests -v
-python3 scripts/package.py
-python3 scripts/verify.py
-python3 scripts/verify.py --live  # 实际访问有道，网络或服务故障会失败
-```
+| 快捷键 | 功能 |
+| --- | --- |
+| **回车 ↩** | 复制选中的释义或译文 |
+| **Command ⌘ + 回车** | 将选中的结果直接粘贴到当前输入位置 |
+| **Control ⌃ + 回车** | 打开有道词典网页，查看详细释义和例句 |
+| **Shift ⇧ + 回车** | 朗读查询的原文 |
 
-4.1.0 修复：中日韩释义漏解析、句子翻译失败、特殊字符查询错误、发音 shell 注入、Alfred 参数注入、历史 JSON 损坏、缺失历史文件异常、空输入异常、英文句子发音语言误判及第三方依赖兼容警告。
+发音使用 macOS 本机语音。英文、中文、日语和韩语会自动选择对应语言的声音。
 
-MIT License，见 `License`。
+即使没有查到结果，或网络查询失败，也可以按 **Control ⌃ + 回车** 到有道网页继续查询。
 
-GitHub Actions 会在推送和 PR 时运行回归测试、安装包校验及可重复构建检查。版本标签（如 `4.1.0`）通过检查后自动发布 Release 和安装包。真实接口测试由本机显式执行，不作为离线回归检查。
+### 查看历史查询
+
+输入 `yd *`，显示最近 9 条释义。选择后，同样可以复制、粘贴、打开网页或朗读原文。
+
+历史记录保存在本机，最多保留 200 条释义；同一查询的不同释义可能分别占一条。
+
+### 选中文字，快捷查询
+
+如果经常在阅读时查词，可以在 Alfred 的 **Workflows → Youdao** 中设置 Hotkey：
+
+1. 打开 Hotkey 节点，设置自己习惯的快捷键，并将传入内容设为选中的文字。
+2. 确认 Hotkey 已连接到 `yd` 的 Script Filter 输入节点；没有连线时，先连接这两个节点。
+3. 保存后，在其他应用中选中文字，按刚才设置的快捷键即可查询。
+
+快捷键需要自行设置，安装包没有预设“双击 Option”。
+
+## 常见问题
+
+**输入 `yd` 后没有结果？**
+
+先确认 Workflow 已导入并启用，再试试 `yd hello`。本工具需要联网；遇到“查询失败”时可稍后重试，或按 Control + 回车打开网页。
+
+如果 Alfred 调试窗口提示找不到 `/usr/bin/python3`，需要安装 Apple Command Line Tools，或将 Workflow 脚本中的 Python 路径改为本机 Python 3 的绝对路径。
+
+**复制成功，但不能直接粘贴？**
+
+确认目标应用处于可输入状态，并在 macOS 系统设置的“隐私与安全性 → 辅助功能”中允许 Alfred 控制电脑。
+
+**没有朗读声音？**
+
+先检查系统音量，再到 macOS 的语音设置中确认相应语言的声音已下载。朗读使用本机语音，音色可能与有道网页不同。
+
+**还能同步到有道在线单词本吗？**
+
+目前不支持。旧版的 Alt + 回车同步操作已停用，不需要填写 Cookie。
+
+**查询内容会保存或发送到哪里？**
+
+查询原文会发送给有道获取结果；历史释义保存在本机，不会随安装包分享。有道网站接口可能调整或限流，具体译文以实际返回为准。
+
+## 4.1.0 更新
+
+- 修复中文、日语、韩语释义漏显示和句子翻译失败。
+- 修复包含 `&amp;`、`#` 等特殊字符时查错词的问题。
+- 改进朗读、快捷键参数处理和历史记录，避免特殊字符导致操作异常。
+- 精简安装包，无需额外安装 Python 依赖。
+
+开发、接口和打包说明见 [开发文档](docs/DEVELOPMENT.md)。
+
+MIT License，见 [License](License)。
 </string>
 	<key>uidata</key>
 	<dict>
