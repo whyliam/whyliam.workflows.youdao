@@ -113,7 +113,7 @@
 				<key>spaces</key>
 				<string></string>
 				<key>url</key>
-				<string>https://dict.youdao.com/result?word={query}&amp;lang=en&amp;keyfrom=whyliam.workflows.youdao</string>
+				<string>{query}</string>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.openurl</string>
@@ -130,9 +130,9 @@
 				<key>escaping</key>
 				<integer>0</integer>
 				<key>script</key>
-				<string>/usr/bin/python3 splitargs.py "{query}" "search"</string>
+				<string>/usr/bin/python3 splitargs.py "$1" search</string>
 				<key>scriptargtype</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>type</key>
@@ -153,9 +153,9 @@
 				<key>escaping</key>
 				<integer>0</integer>
 				<key>script</key>
-				<string>/usr/bin/python3 splitargs.py "{query}" "pronounce"</string>
+				<string>/usr/bin/python3 splitargs.py "$1" pronounce</string>
 				<key>scriptargtype</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>type</key>
@@ -196,9 +196,9 @@
 				<key>runningsubtext</key>
 				<string>正在获取中...</string>
 				<key>script</key>
-				<string>/usr/bin/python3 youdao.py "{query}"</string>
+				<string>/usr/bin/python3 youdao.py "$1"</string>
 				<key>scriptargtype</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>subtext</key>
@@ -244,9 +244,9 @@
 				<key>escaping</key>
 				<integer>0</integer>
 				<key>script</key>
-				<string>/usr/bin/python3 splitargs.py "{query}" "copy"</string>
+				<string>/usr/bin/python3 splitargs.py "$1" copy</string>
 				<key>scriptargtype</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>type</key>
@@ -267,9 +267,9 @@
 				<key>escaping</key>
 				<integer>0</integer>
 				<key>script</key>
-				<string>/usr/bin/python3 splitargs.py "{query}" "copy"</string>
+				<string>/usr/bin/python3 splitargs.py "$1" copy</string>
 				<key>scriptargtype</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>type</key>
@@ -334,108 +334,117 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>有道翻译 Workflow v4.0.0
+	<string># 有道词典 Alfred Workflow 4.1.0
 
-默认快捷键 yd, 查看翻译结果。
+输入 `yd 单词或句子` 查询中英、日中、韩中释义及句子翻译。
 
-1. 英译中
-2. 中译英
-3. 翻译短语句子
-4. 打开有道翻译页面，查看详细内容
-5. 直接在打出翻译结果
-6. 显示历史查询记录
+- 回车：复制所选结果。
+- Command + 回车：粘贴所选结果。
+- Control + 回车：打开对应语言的有道词典网页；查询失败时也可使用。
+- Shift + 回车：使用 macOS 本机语音朗读原文（并非有道音频）。
+- `yd *`：显示最近 9 条释义。空查询显示使用提示。
+- 选中文字快捷查询：在 Alfred 中自行设置 Workflow 的 Hotkey。
 
-功能
+## 安装
 
-1. 按`回车`复制
-2. 按`Control+回车`打开有道翻译页面
-3. 按`Comman+回车`直接在打出翻译结果
-4. 按`Shift+回车`直接发音
-5. 选中文字 双击`Command`进行翻译
-6. `yd *` 显示历史查询记录
+双击仓库中的 `whyliam.workflows.youdao.alfredworkflow` 导入 Alfred。
+需要支持 Workflow 的 Alfred 和 `/usr/bin/python3`。若系统没有 Python 3，需要先安装 Apple Command Line Tools，或将 Workflow 脚本中的解释器路径改为本机 Python 3 的绝对路径。
 
-更多
+运行时仅使用 Python 3 标准库，无需 pip 安装依赖。历史版本自带的第三方库不再参与运行，也不会进入新安装包。
 
-参见 https://blog.naaln.com/2024/09/alfred-youdao-intro/</string>
+## 接口与数据
+
+通过 HTTPS 调用有道词典网站的 `https://dict.youdao.com/jsonapi_s`，查询参数统一编码，请求超时 10 秒。该网站接口不是有稳定性承诺的有道智云 API，可能调整或限流；失败时显示错误并保留网页查询入口。翻译结果由有道返回，不保证译文准确性。
+
+历史记录保存在 Alfred 的 `alfred_workflow_data` 目录中；直接运行时使用 `~/Library/Application Support/Alfred/Workflow Data/whyliam.workflows.youdao`。采用 UTF-8 JSON Lines，最多保留 200 条、去重，并通过文件锁和原子替换处理并发。首次读取可兼容旧版 Workflow 目录的 `history.log`，损坏记录会跳过。查询原文会发送给有道，释义保存在本机历史中。
+
+不再使用旧版 Cookie 和在线单词本功能。安装包不包含 Cookie、历史记录或第三方依赖。
+
+## 开发与验证
+
+```sh
+python3 -m unittest discover -s tests -v
+python3 scripts/package.py
+```
+
+4.1.0 修复：中日韩释义漏解析、句子翻译失败、特殊字符查询错误、发音 shell 注入、Alfred 参数注入、历史 JSON 损坏、缺失历史文件异常、空输入异常、英文句子发音语言误判及第三方依赖兼容警告。
+
+MIT License，见 `License`。
+</string>
 	<key>uidata</key>
 	<dict>
 		<key>0907BEF4-816F-48FF-B157-03F5C2AACEAB</key>
 		<dict>
 			<key>xpos</key>
-			<real>830</real>
+			<real>830.0</real>
 			<key>ypos</key>
-			<real>420</real>
+			<real>420.0</real>
 		</dict>
 		<key>27E60581-8105-41DD-8E29-4FE811179098</key>
 		<dict>
 			<key>xpos</key>
-			<real>500</real>
+			<real>500.0</real>
 			<key>ypos</key>
-			<real>290</real>
+			<real>290.0</real>
 		</dict>
 		<key>4473C9D3-7A15-4D31-84F6-A096A7CFF46C</key>
 		<dict>
 			<key>xpos</key>
-			<real>830</real>
+			<real>830.0</real>
 			<key>ypos</key>
-			<real>150</real>
+			<real>150.0</real>
 		</dict>
 		<key>5751065C-52C1-4D19-8F7D-03B730BFE440</key>
 		<dict>
 			<key>note</key>
 			<string>双击设置快捷方式</string>
 			<key>xpos</key>
-			<real>270</real>
+			<real>270.0</real>
 			<key>ypos</key>
-			<real>440</real>
+			<real>440.0</real>
 		</dict>
 		<key>6A03FDC5-89AC-4F9D-9456-3762ACA751FE</key>
 		<dict>
 			<key>xpos</key>
-			<real>830</real>
+			<real>830.0</real>
 			<key>ypos</key>
-			<real>40</real>
+			<real>40.0</real>
 		</dict>
 		<key>7C1ABC41-3B36-401F-96C7-30BCB39181FF</key>
 		<dict>
 			<key>xpos</key>
-			<real>500</real>
+			<real>500.0</real>
 			<key>ypos</key>
-			<real>410</real>
+			<real>410.0</real>
 		</dict>
 		<key>91C343E7-50D8-4B0D-9034-1C16C20DA8D4</key>
 		<dict>
 			<key>xpos</key>
-			<real>270</real>
+			<real>270.0</real>
 			<key>ypos</key>
-			<real>250</real>
+			<real>250.0</real>
 		</dict>
 		<key>DBA62127-3B78-4B80-B82B-1C6AEC393003</key>
 		<dict>
 			<key>xpos</key>
-			<real>830</real>
+			<real>830.0</real>
 			<key>ypos</key>
-			<real>290</real>
+			<real>290.0</real>
 		</dict>
 		<key>F99C4C55-10F5-4D62-A77D-F27058629B21</key>
 		<dict>
 			<key>xpos</key>
-			<real>500</real>
+			<real>500.0</real>
 			<key>ypos</key>
-			<real>40</real>
+			<real>40.0</real>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>
 	<array/>
-	<key>variables</key>
-	<dict>
-		<key>filepath</key>
-		<string>~/Documents/Alfred-youdao-wordbook.xml</string>
-	</dict>
 	<key>variablesdontexport</key>
 	<array/>
 	<key>version</key>
-	<string>4.0.0</string>
+	<string>4.1.0</string>
 	<key>webaddress</key>
 	<string>https://github.com/whyliam/whyliam.workflows.youdao</string>
 </dict>

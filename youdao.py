@@ -1,176 +1,156 @@
-# -*- coding: utf-8 -*-
-import sys
-import os
-
-# 主要备注：
-# 1. 该脚本用于与有道翻译API交互，获取翻译结果、发音和释义。
-# 2. 使用BeautifulSoup解析HTML内容。
-# 3. 记录历史查询到history.log文件中。
-
-from workflow import Workflow3
+#!/usr/bin/env python3
+"""Dependency-free Youdao dictionary and translation for Alfred."""
+import fcntl
 import json
-import uuid
-import time
-import requests
-from bs4 import BeautifulSoup
+import os
+from pathlib import Path
+import re
+import sys
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
+API = 'https://dict.youdao.com/jsonapi_s'
+ROOT = Path(__file__).resolve().parent
 
-ICON_DEFAULT = 'icon.png'
-ICON_PHONETIC = 'icon_phonetic.png'
-ICON_BASIC = 'icon_basic.png'
-ICON_WEB = 'icon_web.png'
-ICON_UPDATE = 'icon_update.png'
-ICON_ERROR = 'icon_error.png'
-
-def get_user_id():
-    # 获取用户ID，如果不存在则生成一个新的ID
-    user_id = wf.stored_data('user__id')
-    if user_id is None:
-        user_id = str(uuid.uuid1())
-    wf.store_data('user__id', user_id)
-    return user_id
 
 def get_query_language(query):
-    # 根据输入的查询内容确定语言类型
-    # 检查中文
-    import re
-    if re.search(r"[\u4e00-\u9fa5]+", query):
-        return "eng"
-    # 检查韩语
-    elif re.search(r"[\uAC00-\uD7A3]+", query):
-        return "ko"
-    # 检查日语
-    elif re.search(r"[\u3040-\u309F\u30A0-\u30FF]+", query):
-        return "jap"
-    else:
-        return "eng"
+    # Kana must take precedence over kanji in Japanese sentences.
+    if re.search(r'[\u3040-\u30ff]', query):
+        return 'jap'
+    if re.search(r'[\uac00-\ud7af\u1100-\u11ff]', query):
+        return 'ko'
+    return 'eng'
+
+
+def data_dir():
+    return Path(os.environ.get('alfred_workflow_data', str(Path.home() / 'Library/Application Support/Alfred/Workflow Data/whyliam.workflows.youdao')))
+
 
 def get_youdao_url(query):
-    # 构建有道翻译的请求URL
-    query_language = get_query_language(query)
-    url = "http://mobile.youdao.com/dict?le=" + query_language + "&q=" + query
-    return url
+    return API + '?' + urlencode({'q': query, 'le': get_query_language(query)})
 
-def get_youdao_response(query):
-    # 发送请求并获取有道翻译的响应
-    url = get_youdao_url(query)
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
-    }  # 添加请求头
+
+def fetch(query):
+    request = Request(get_youdao_url(query), headers={'User-Agent': 'Youdao-Alfred/4.1.0', 'Accept': 'application/json'})
+    with urlopen(request, timeout=10) as response:
+        data = json.loads(response.read(4 * 1024 * 1024).decode('utf-8'))
+    if not isinstance(data, dict):
+        raise ValueError('Invalid API response')
+    return data
+
+
+def text(value):
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list):
+        return ''.join(text(v) for v in value)
+    if isinstance(value, dict):
+        return text(value.get('#text', value.get('i', '')))
+    return ''
+
+
+def make_item(query, result, subtitle='简明释义', icon='icon_basic.png'):
+    payload = json.dumps({'query': query, 'result': result}, ensure_ascii=False)
+    return {'title': result, 'subtitle': subtitle, 'arg': payload, 'valid': True,
+            'icon': {'path': icon}, 'mods': {'ctrl': {'arg': payload, 'valid': True}}}
+
+
+def parse_results(query, data):
+    items = []
+    seen = set()
+
+    def add(value, subtitle='简明释义', icon='icon_basic.png'):
+        if value and value not in seen:
+            seen.add(value)
+            items.append(make_item(query, value, subtitle, icon))
+
+    for key in ('ec', 'ce', 'jc', 'cj', 'kc', 'ck'):
+        section = data.get(key) or {}
+        words = section.get('word', [])
+        if isinstance(words, dict):
+            words = [words]
+        for word in words:
+            phones = ' '.join(label + '[' + word[field] + ']' for field, label in
+                              [('ukphone', '英'), ('usphone', '美'), ('phone', '')] if word.get(field))
+            if phones:
+                add(phones, '本机朗读：Shift + 回车', 'icon_phonetic.png')
+            for sense in word.get('trs', []):
+                for translation in sense.get('tr', []):
+                    add(text(translation.get('l', {})).strip())
+    translation = data.get('fanyi') or {}
+    add(text(translation.get('tran', '')), '翻译结果', 'icon.png')
+    # Exact-match web definitions only; related phrases are not translations.
+    if not any(i['subtitle'] in ('简明释义', '翻译结果') for i in items):
+        for entry in (data.get('web_trans') or {}).get('web-translation', []):
+            if entry.get('key', '').casefold() == query.casefold():
+                for trans in entry.get('trans', []):
+                    add(text(trans.get('value', '')), '网络释义', 'icon_web.png')
+    return items
+
+
+def history(items=None):
+    directory = data_dir()
+    directory.mkdir(parents=True, exist_ok=True)
+    path = directory / 'history.jsonl'
+    # Separate lock file keeps read/replace safe across concurrent invocations.
+    with (directory / 'history.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        records = []
+        source = path if path.exists() else ROOT / 'history.log'
+        if source.exists():
+            for line in source.read_text(encoding='utf-8', errors='replace').splitlines():
+                try:
+                    record = json.loads(line)
+                    if isinstance(record, dict) and isinstance(record.get('title'), str):
+                        if isinstance(record.get('icon'), str):
+                            record['icon'] = {'path': record['icon']}
+                        records.append(record)
+                except (ValueError, TypeError):
+                    continue
+        if items is not None:
+            for item in items:
+                if item['subtitle'] != '本机朗读：Shift + 回车':
+                    records = [r for r in records if r.get('arg') != item['arg']]
+                    records.append(item)
+            temporary = directory / 'history.tmp'
+            temporary.write_text(''.join(json.dumps(r, ensure_ascii=False) + '\n' for r in records[-200:]), encoding='utf-8')
+            temporary.replace(path)
+        return list(reversed(records[-9:]))
+
+
+def notice(title, subtitle, query=''):
+    item = make_item(query, title, subtitle, 'icon_error.png')
+    item['valid'] = False
+    return item
+
+
+def main(args=None):
+    args = sys.argv[1:] if args is None else args
+    query = args[0].strip() if args else ''
+    if not query:
+        return {'items': [notice('输入单词或句子', '输入 * 查看最近查询')]}
+    if len(query) > 2000:
+        return {'items': [notice('查询内容过长', '请控制在 2000 字符以内')]}
+    if query == '*':
+        try:
+            items = history()
+            return {'items': items or [notice('暂无查询历史', '先查询一个单词或句子')]}
+        except OSError:
+            return {'items': [notice('无法读取历史记录', '请检查数据目录权限')]}
     try:
-        response = requests.get(url, headers=headers) 
-        response.raise_for_status()  # 检查请求是否成功
-        return response
-    except requests.RequestException:
-        return None
-
-def get_youdao_soup(response):
-    # 将响应内容解析为BeautifulSoup对象
-    if response is None:  # 检查响应是否有效
-        return None
-    try:
-        soup = BeautifulSoup(response.text, 'html.parser')
-    except Exception:
-        return None
-    return soup
-
-def save_history_data(query, title, arg, ICON_DEFAULT):
-    # 将查询历史保存到文件中
-    jsonData = '{"title": "%s", "subtitle": "%s", "arg": "%s", "icon": "%s"}\n' % (query, title, arg, ICON_DEFAULT)
-    with open('history.log', 'a') as file:
-        file.write(jsonData)
-
-def get_history_data():
-    # 从历史记录文件中读取最近的查询记录
-    with open('history.log', 'r') as file:
-        for line in file.readlines()[-1:-10:-1]:
-            try:
-                line = json.loads(line)
-                wf.add_item(
-                    title=line['title'], subtitle=line['subtitle'],
-                    arg=line['arg'], valid=True, icon=line['icon'])
-            except Exception:
-                pass
-
-def get_arg_str(query, result, pronounce='', operation='', query_language='eng'):
-    arg_array = [str(wf.version), query, result, query_language, pronounce, operation]
-    return '$%'.join(arg_array)
-
-def add_translation(query, soup):
-    # 翻译结果
-    subtitle = '翻译结果'
-    fanyi_content = soup.find('div', id='fanyi_contentWrp')  # 查找翻译内容
-    if fanyi_content:  # 检查翻译内容是否存在
-        translation = fanyi_content.find('p').find_next_sibling('p')  # 获取第二个 <p> 标签内容
-        if translation:
-            title = str(translation.get_text(strip=True))  # 转换为字符串
-            arg = get_arg_str(query, title)
-            save_history_data(query, title, arg, ICON_DEFAULT)
-            wf.add_item(
-                title=title, subtitle=subtitle, arg=arg,
-                valid=True, icon=ICON_DEFAULT)
-
-def add_phonetic(query, soup):
-    # 发音
-    subtitle = '有道发音'
-    pronunciations = {}
-    for span in soup.find_all('span', class_='phonetic'):
-        preceding_text = span.find_previous('span').get_text(strip=True)  # 获取发音前的文本
-        pronunciations[preceding_text] = span.get_text(strip=True)  # 将发音存入字典
-
-    title = ' '.join([f"{lang}" for lang, pronunciation in pronunciations.items()])
-    
-    # 检查发音否为空
-    if not title.strip():  # 如果标题为空则不执行 add_item
-        return
-    arg = get_arg_str(query, title)
-    wf.add_item(
-        title=title, subtitle=subtitle, arg=arg,
-        valid=True, icon=ICON_PHONETIC)
-
-def add_explains(query, soup):
-    # 简明释意
-    ec_content = soup.find('div', id='ec_contentWrp')  # 查找简明释意内容
-    if ec_content:  # 检查内容是否存在
-        definitions = [li.get_text(strip=True) for li in ec_content.find_all('li')] 
-        for definition in definitions:
-            title = definition
-            subtitle = '简明释意'
-            arg = get_arg_str(query, title)
-            save_history_data(query, title, arg, ICON_DEFAULT)
-            wf.add_item(
-                title=title, subtitle=subtitle, arg=arg,
-                valid=True, icon=ICON_BASIC)
-
-def add_badcase(query):
-    title = '有道也翻译不出来了'
-    subtitle = '尝试一下去网站搜索'
-    arg = get_arg_str(query, '')
-    wf.add_item(
-        title=title, subtitle=subtitle, arg=arg,
-        valid=True, icon=ICON_DEFAULT)
-    wf.send_feedback()
-
-def main(wf):
-    query = wf.args[0].strip()
-
-    if query == "*":
-        get_history_data()
+        items = parse_results(query, fetch(query))
+    except (OSError, ValueError, TypeError, KeyError, AttributeError) as error:
+        print('Youdao request failed: ' + str(error), file=sys.stderr)
+        return {'items': [notice('查询失败', '网络或接口异常，请稍后重试；Ctrl + 回车打开网页', query)]}
+    if not items:
+        items = [notice('未找到释义', 'Ctrl + 回车打开有道网页', query)]
     else:
-        response = get_youdao_response(query)
-        soup = get_youdao_soup(response)
-        if soup is None:
-            add_badcase(query)
-            return
-        else:
-            add_translation(query, soup)
-            add_phonetic(query, soup)
-            add_explains(query, soup)
-    if not wf._items: 
-        add_badcase(query)
-        return
-    wf.send_feedback()
+        try:
+            history(items)
+        except OSError as error:
+            print('Could not save history: ' + str(error), file=sys.stderr)
+    return {'items': items}
+
 
 if __name__ == '__main__':
-    wf = Workflow3()
-    sys.exit(wf.run(main))
+    print(json.dumps(main(), ensure_ascii=False))
